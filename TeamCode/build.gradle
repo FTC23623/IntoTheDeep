@@ -25,5 +25,6 @@ android {
 
 dependencies {
     implementation project(':FtcRobotController')
+    implementation fileTree(dir: '../libs', include: ['*.aar', '*.jar'], exclude: []) //For including NavX IMU libraries
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 }
