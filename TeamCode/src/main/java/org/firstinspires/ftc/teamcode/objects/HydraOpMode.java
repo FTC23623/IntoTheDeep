@@ -11,11 +11,16 @@ public class HydraOpMode {
     public HardwareMap mHardwareMap;
     public HydraDriveDatalogger mDriveLogger;
     public HydraObjDetDatalogger mObjLogger;
+    public com.qualcomm.robotcore.hardware.Gamepad mDriverGamepad;
+    public com.qualcomm.robotcore.hardware.Gamepad mOperatorGamepad;
     public HydraOpMode(Telemetry telemetry, HardwareMap hardwareMap, HydraDriveDatalogger driveLogger,
-                       HydraObjDetDatalogger objDetDatalogger) {
+                       HydraObjDetDatalogger objDetDatalogger, com.qualcomm.robotcore.hardware.Gamepad driverGamepad,
+                       com.qualcomm.robotcore.hardware.Gamepad operatorGamepad) {
         mTelemetry = telemetry;
         mHardwareMap = hardwareMap;
         mDriveLogger = driveLogger;
         mObjLogger = objDetDatalogger;
+        mDriverGamepad = driverGamepad;
+        mOperatorGamepad = operatorGamepad;
     }
 }
