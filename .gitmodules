@@ -1,6 +1,3 @@
 [submodule "submodules/road-runner"]
 	path = submodules/road-runner
 	url = https://github.com/acmerobotics/road-runner-quickstart.git
-[submodule "submodules/MeepMeep"]
-	path = submodules/MeepMeep
-	url = https://github.com/acmerobotics/MeepMeep.git
