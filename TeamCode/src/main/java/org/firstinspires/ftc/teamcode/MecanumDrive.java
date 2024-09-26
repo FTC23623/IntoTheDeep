@@ -61,7 +61,9 @@ public final class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
         // drive model parameters
-        public double inPerTick = 0.0029426;
+        // from gobilda 1.890" diameter
+        // 1.890 * pi / 2000 ticks
+        public double inPerTick = 0.0029688050576423546103471979972;
         public double lateralInPerTick =  0.0024791428295208974;
         public double trackWidthTicks = 5053.951390864541;
 
