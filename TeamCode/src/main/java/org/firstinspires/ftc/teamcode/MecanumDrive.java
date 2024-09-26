@@ -64,13 +64,13 @@ public final class MecanumDrive {
         // from gobilda 1.890" diameter
         // 1.890 * pi / 2000 ticks
         public double inPerTick = 0.0029688050576423546103471979972;
-        public double lateralInPerTick =  0.0024791428295208974;
-        public double trackWidthTicks = 5053.951390864541;
+        public double lateralInPerTick = inPerTick;
+        public double trackWidthTicks = 0;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.9306682263134745;
-        public double kV = 0.0005783932500157938;
-        public double kA = 0.0001;
+        public double kS = 0;
+        public double kV = 0;
+        public double kA = 0;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -82,9 +82,9 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 8;
-        public double lateralGain = 8;
-        public double headingGain = 20; // shared with turn
+        public double axialGain = 0;
+        public double lateralGain = 0;
+        public double headingGain = 0; // shared with turn
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
