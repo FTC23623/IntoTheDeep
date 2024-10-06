@@ -1,3 +1,0 @@
-[submodule "submodules/road-runner"]
-	path = submodules/road-runner
-	url = https://github.com/acmerobotics/road-runner-quickstart.git
