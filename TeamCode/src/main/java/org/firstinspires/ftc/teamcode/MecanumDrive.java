@@ -65,7 +65,10 @@ public final class MecanumDrive {
         // 1.890 * pi / 2000 ticks
         public double inPerTick = 0.0029688050576423546103471979972;
         public double lateralInPerTick = inPerTick;
-        public double trackWidthTicks = 5164.019069539809;
+        // based on 15.5625 in measured between the odometry wheels
+        // public double trackWidthTicks = 5242.0080463;
+        // based on 16.5 in measured between the odometry wheels
+        public double trackWidthTicks = 5557.79166352575;
 
         // feedforward parameters (in tick units)
         public double kS = 0.749610904563784;
