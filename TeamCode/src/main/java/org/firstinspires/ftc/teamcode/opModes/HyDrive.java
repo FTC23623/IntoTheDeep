@@ -23,26 +23,12 @@ public class HyDrive extends LinearOpMode {
   private HydraOpMode mOpMode;
   private HydraImu mImu;
   private HydraDrive mDrive;
-  private DcMotor MotDrFrLt;
-  private DcMotor MotDrBkLt;
-  private DcMotor MotDrFrRt;
-  private DcMotor MotDrBkRt;
-  private final double cTrgBtnThresh = 0.1;
-  private final double cDriveBoosted = 1;
-  private final double cDriveNormal = 0.9;
-  private final double cDriveSlow = 0.5;
-  private final boolean cFieldCentric = true;
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.
    */
   @Override
   public void runOpMode() {
-    MotDrFrLt = hardwareMap.get(DcMotor.class, "MotDrFrLt");
-    MotDrBkLt = hardwareMap.get(DcMotor.class, "MotDrBkLt");
-    MotDrFrRt = hardwareMap.get(DcMotor.class, "MotDrFrRt");
-    MotDrBkRt = hardwareMap.get(DcMotor.class, "MotDrBkRt");
-
     // Initialization Routines
     // Initialize the IMU with non-default settings. To use this block,
     // plug one of the "new IMU.Parameters" blocks into the parameters socket.
