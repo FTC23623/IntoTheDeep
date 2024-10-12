@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.types.HydraConstants;
 
@@ -8,6 +10,8 @@ public class HydraDrive_Manual extends HydraDrive {
     public HydraDrive_Manual(HydraOpMode op, HydraImu imu) {
         super(op, imu);
         mGamepad = mOp.mDriverGamepad;
+        SetAllMotorPower(0.0);
+        SetAllMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     @Override

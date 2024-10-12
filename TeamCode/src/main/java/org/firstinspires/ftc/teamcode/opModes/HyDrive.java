@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.subsystems.HydraImu;
 import org.firstinspires.ftc.teamcode.subsystems.HydraImu_Hub;
 import org.firstinspires.ftc.teamcode.subsystems.HydraImu_navx;
 
-@TeleOp(name = "HyDrive")
+@TeleOp(name = "HyDrive-Java")
 public class HyDrive extends LinearOpMode {
   private HydraOpMode mOpMode;
   private HydraImu mImu;

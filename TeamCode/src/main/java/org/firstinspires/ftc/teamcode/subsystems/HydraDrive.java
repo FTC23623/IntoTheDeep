@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -14,10 +15,10 @@ public class HydraDrive {
     protected final DcMotorEx mMotDrBkLt;
     protected final DcMotorEx mMotDrBkRt;
     protected final HydraImu mImu;
-    protected final String cfgFrLt = "MotDrFrLt";
-    protected final String cfgFrRt = "MotDrFrRt";
-    protected final String cfgBkLt = "MotDrBkLt";
-    protected final String cfgBkRt = "MotDrBkRt";
+    protected final String cfgFrLt = "leftFront";
+    protected final String cfgFrRt = "rightFront";
+    protected final String cfgBkLt = "leftBack";
+    protected final String cfgBkRt = "rightBack";
     protected final double cWheelDiameter = 3.78;
     protected final double cWheelCircumference = cWheelDiameter * Math.PI;
     protected final double cCountsPerWheelRevolution = 537.6;
@@ -65,9 +66,9 @@ public class HydraDrive {
         mMotDrFrRt.setTargetPositionTolerance(10);
         // set the motor directions
         mMotDrFrLt.setDirection(DcMotor.Direction.REVERSE);
-        mMotDrBkLt.setDirection(DcMotor.Direction.REVERSE);
-        mMotDrFrRt.setDirection(DcMotor.Direction.FORWARD);
-        mMotDrBkRt.setDirection(DcMotor.Direction.FORWARD);
+        mMotDrBkLt.setDirection(DcMotor.Direction.FORWARD);
+        mMotDrFrRt.setDirection(DcMotor.Direction.REVERSE);
+        mMotDrBkRt.setDirection(DcMotor.Direction.REVERSE);
         // reset the encoders
         SetAllMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // we want to brake when we aren't applying power
