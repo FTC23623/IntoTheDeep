@@ -13,7 +13,9 @@ public class Arm {
     public static double mLiftI;
     public static double mLiftD;
     public static double mLiftF;
-    private final double mLiftMotorTicksInDeg = ;//700.0 / 180.0;
+    // 1993.6 PPR at the motor
+    // 2x1 gear
+    private final double mLiftMotorTicksInDeg = 1993.6 / 180.0;
     public static int mLiftPosition;
     private DcMotor mLiftMotor;
     private DcMotor mSlideMotor;
