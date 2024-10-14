@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.objects.OpmodeHeading;
+import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.Drive_Manual;
 import org.firstinspires.ftc.teamcode.subsystems.Imu;
@@ -12,6 +16,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Imu_Hub;
 import org.firstinspires.ftc.teamcode.subsystems.Lens;
 import org.firstinspires.ftc.teamcode.subsystems.Lights;
 
+@Config
 @TeleOp(name = "HyDrive-Java")
 public class HyDrive extends LinearOpMode {
   private HydraOpMode mOpMode;
@@ -19,6 +24,7 @@ public class HyDrive extends LinearOpMode {
   private Drive mDrive;
   private Lens mLens;
   private Lights mLights;
+  private Arm mArm;
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.
@@ -26,17 +32,14 @@ public class HyDrive extends LinearOpMode {
   @Override
   public void runOpMode() {
     // Initialization Routines
-    // Initialize the IMU with non-default settings. To use this block,
-    // plug one of the "new IMU.Parameters" blocks into the parameters socket.
-    // Create a Parameters object for use with an IMU in a REV Robotics Control Hub or
-    // Expansion Hub, specifying the hub's orientation on the robot via the direction that
-    // the REV Robotics logo is facing and the direction that the USB ports are facing.
+    telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1,
             gamepad2);
     mImu = new Imu_Hub(mOpMode);
     mDrive = new Drive_Manual(mOpMode, mImu);
     mLens = new Lens(mOpMode);
     mLights = new Lights(mOpMode);
+    mArm = new Arm(mOpMode);
     while (!mImu.Connected() || mImu.Calibrating()) {
       if (isStopRequested() || !opModeIsActive()) {
         break;
@@ -50,6 +53,7 @@ public class HyDrive extends LinearOpMode {
       // System processes
       mDrive.Process();
       mLights.SetColor(mLens.GetDetectedSample());
+      mArm.Process();
       // Update telemetry once for all processes
       telemetry.update();
       sleep(20);
