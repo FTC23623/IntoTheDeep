@@ -2,27 +2,19 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.LED;
-import com.qualcomm.robotcore.hardware.Servo;
-import java.util.List;
-import org.firstinspires.ftc.robotcore.external.JavaUtil;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.objects.OpmodeHeading;
-import org.firstinspires.ftc.teamcode.subsystems.HydraDrive;
-import org.firstinspires.ftc.teamcode.subsystems.HydraDrive_Manual;
-import org.firstinspires.ftc.teamcode.subsystems.HydraImu;
-import org.firstinspires.ftc.teamcode.subsystems.HydraImu_Hub;
-import org.firstinspires.ftc.teamcode.subsystems.HydraImu_navx;
+import org.firstinspires.ftc.teamcode.subsystems.Drive;
+import org.firstinspires.ftc.teamcode.subsystems.Drive_Manual;
+import org.firstinspires.ftc.teamcode.subsystems.Imu;
+import org.firstinspires.ftc.teamcode.subsystems.Imu_Hub;
 
 @TeleOp(name = "HyDrive-Java")
 public class HyDrive extends LinearOpMode {
   private HydraOpMode mOpMode;
-  private HydraImu mImu;
-  private HydraDrive mDrive;
+  private Imu mImu;
+  private Drive mDrive;
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.
@@ -37,8 +29,8 @@ public class HyDrive extends LinearOpMode {
     // the REV Robotics logo is facing and the direction that the USB ports are facing.
     mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1,
             gamepad2);
-    mImu = new HydraImu_Hub(mOpMode);
-    mDrive = new HydraDrive_Manual(mOpMode, mImu);
+    mImu = new Imu_Hub(mOpMode);
+    mDrive = new Drive_Manual(mOpMode, mImu);
     while (!mImu.Connected() || mImu.Calibrating()) {
       if (isStopRequested() || !opModeIsActive()) {
         break;

@@ -2,19 +2,18 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
+
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 
-public class HydraDrive {
+public class Drive {
     protected boolean mGyroAssist = true;
     protected final DcMotorEx mMotDrFrLt;
     protected final DcMotorEx mMotDrFrRt;
     protected final DcMotorEx mMotDrBkLt;
     protected final DcMotorEx mMotDrBkRt;
-    protected final HydraImu mImu;
+    protected final Imu mImu;
     protected final String cfgFrLt = "leftFront";
     protected final String cfgFrRt = "rightFront";
     protected final String cfgBkLt = "leftBack";
@@ -36,7 +35,7 @@ public class HydraDrive {
     protected double mCurrentDriveMaxPower;
     protected double mCurrentDriveHeading;
     protected final boolean cResetEncodersBetweenDrives = true;
-    public HydraDrive(HydraOpMode op, HydraImu imu) {
+    public Drive(HydraOpMode op, Imu imu) {
         mOp = op;
         // grab the motors out of the hardware map
         mMotDrFrLt = (DcMotorEx)mOp.mHardwareMap.get(DcMotor.class, cfgFrLt);

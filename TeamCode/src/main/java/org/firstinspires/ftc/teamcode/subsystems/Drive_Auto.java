@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 
-public class HydraDrive_Auto extends HydraDrive {
+public class Drive_Auto extends Drive {
 
-    public HydraDrive_Auto(HydraOpMode op, HydraImu imu) {
+    public Drive_Auto(HydraOpMode op, Imu imu) {
         super(op, imu);
     }
 

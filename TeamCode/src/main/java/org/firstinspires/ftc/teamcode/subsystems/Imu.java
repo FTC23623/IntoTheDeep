@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-public interface HydraImu {
+public interface Imu {
     public boolean Connected();
     public boolean Calibrating();
     public void Close();

@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.types.HydraConstants;
 
-public class HydraDrive_Manual extends HydraDrive {
+public class Drive_Manual extends Drive {
     private com.qualcomm.robotcore.hardware.Gamepad mGamepad;
-    public HydraDrive_Manual(HydraOpMode op, HydraImu imu) {
+    public Drive_Manual(HydraOpMode op, Imu imu) {
         super(op, imu);
         mGamepad = mOp.mDriverGamepad;
         SetAllMotorPower(0.0);
