@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.controller.wpilibcontroller.ArmFeedforward;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 
@@ -24,12 +27,23 @@ public class Arm {
         mOp = opMode;
         mLiftMotor = opMode.mHardwareMap.get(DcMotorEx.class, "liftMotor");
         mSlideMotor = opMode.mHardwareMap.get(DcMotorEx.class, "slideMotor");
-        mLiftP = 0;
-        mLiftI = 0;
-        mLiftD = 0;
-        mLiftF = 0;
+        mLiftP = 0.004;
+        mLiftI = 0.0001;
+        mLiftD = 0.0001;
+        mLiftF = 0.1;
         mPID = new PIDController(mLiftP, mLiftI, mLiftD);
         mLiftPosition = 0;
+        mLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        mLiftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+    }
+
+    public void Test(double p, double i, double d, double f, int pos) {
+        mLiftP = p;
+        mLiftI = i;
+        mLiftD = d;
+        mLiftF = f;
+        mLiftPosition = pos;
     }
 
     public void Process() {
@@ -37,9 +51,16 @@ public class Arm {
         int currentPos = mLiftMotor.getCurrentPosition();
         double pid = mPID.calculate(currentPos, mLiftPosition);
         double ff = Math.cos(Math.toRadians(mLiftPosition / mLiftMotorTicksInDeg)) * mLiftF;
-        double power = pid * ff;
+        double power = pid + ff;
         mLiftMotor.setPower(power);
         mOp.mTelemetry.addData("Lift Pos", currentPos);
         mOp.mTelemetry.addData("Lift Target", mLiftPosition);
+        mOp.mTelemetry.addData("Power", power);
+        mOp.mTelemetry.addData("P", mLiftP);
+        mOp.mTelemetry.addData("I", mLiftI);
+        mOp.mTelemetry.addData("D", mLiftD);
+        mOp.mTelemetry.addData("F", mLiftF);
+        mOp.mTelemetry.addData("pid", pid);
+        mOp.mTelemetry.addData("ff", ff);
     }
 }
