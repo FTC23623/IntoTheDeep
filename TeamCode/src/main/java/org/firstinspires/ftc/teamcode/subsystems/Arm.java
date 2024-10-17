@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.controller.wpilibcontroller.ArmFeedforward;
@@ -9,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 
+@Config
 public class Arm {
     private HydraOpMode mOp;
     private PIDController mPID;
@@ -21,6 +23,8 @@ public class Arm {
     private final double mLiftMotorTicksInDeg = 1993.6 / 180.0;
     public static int mLiftPosition;
     private DcMotor mLiftMotor;
+    public static int mSlidePosition;
+    public static double mSlideMotorPower;
     private DcMotor mSlideMotor;
 
     public Arm(HydraOpMode opMode) {
@@ -36,6 +40,11 @@ public class Arm {
         mLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         mLiftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        mSlidePosition=0;
+        mSlideMotorPower=0.5;
+        mSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mSlideMotor.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
     public void Test(double p, double i, double d, double f, int pos) {
@@ -62,5 +71,13 @@ public class Arm {
         mOp.mTelemetry.addData("F", mLiftF);
         mOp.mTelemetry.addData("pid", pid);
         mOp.mTelemetry.addData("ff", ff);
+        int currentSlide = mSlideMotor.getCurrentPosition();
+        if (Math.abs(currentSlide - mSlidePosition) > 5) {
+            mSlideMotor.setTargetPosition(mSlidePosition);
+            mSlideMotor.setPower(mSlideMotorPower);
+            mSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        } else {
+            mSlideMotor.setPower(0);
+        }
     }
 }
