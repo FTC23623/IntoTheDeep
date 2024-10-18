@@ -21,8 +21,11 @@ public class Arm {
     // 1993.6 PPR at the motor
     // 2x1 gear
     private final double mLiftMotorTicksInDeg = 1993.6 / 180.0;
+    // 300 is straight forward
+    // 1300 is straight up
     public static int mLiftPosition;
     private DcMotor mLiftMotor;
+    // ~1700 is the top
     public static int mSlidePosition;
     public static double mSlideMotorPower;
     private DcMotor mSlideMotor;
@@ -38,21 +41,14 @@ public class Arm {
         mPID = new PIDController(mLiftP, mLiftI, mLiftD);
         mLiftPosition = 0;
         mLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         mLiftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         mSlidePosition=0;
-        mSlideMotorPower=0.5;
+        mSlideMotorPower=1;
         mSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mSlideMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-    }
-
-    public void Test(double p, double i, double d, double f, int pos) {
-        mLiftP = p;
-        mLiftI = i;
-        mLiftD = d;
-        mLiftF = f;
-        mLiftPosition = pos;
     }
 
     public void Process() {
@@ -79,5 +75,7 @@ public class Arm {
         } else {
             mSlideMotor.setPower(0);
         }
+        mOp.mTelemetry.addData("Slide Pos", currentSlide);
+        mOp.mTelemetry.addData("Slide Target", mSlidePosition);
     }
 }
