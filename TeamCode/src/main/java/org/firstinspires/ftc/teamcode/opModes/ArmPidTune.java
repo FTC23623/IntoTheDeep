@@ -8,19 +8,24 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
 @Config
 @TeleOp(name="ArmPidTune")
 public class ArmPidTune extends LinearOpMode {
+
+
 
     @Override
     public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         HydraOpMode opMode = new HydraOpMode(telemetry, hardwareMap, null, null, null, null);
         Arm arm = new Arm(opMode);
+        Intake intake = new Intake(opMode);
         waitForStart();
         while (opModeIsActive()) {
             arm.Process();
+            intake.Process();
             telemetry.update();
             sleep(20);
         }
