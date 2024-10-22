@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 public class Arm {
     private HydraOpMode mOp;
     private PIDController mPID;
-    private final DcMotor mLiftMotor;
-    private final DcMotor mSlideMotor;
+    private DcMotor mLiftMotor;
+    private DcMotor mSlideMotor;
     // Lift arm PIDF controller gains
     private final double mLiftP = 0.004;
     private final double mLiftI = 0.0001;
@@ -32,14 +32,22 @@ public class Arm {
     // Lift arm motor max lift position
     public static double mLiftMaxPosDeg = 115.0;
     // Slide motor desired position in ticks
-    public static int mSlidePosition;
+    public static int mArmExtendTicks;
+    // Slide extension in inches
+    public static double mArmExtendInches;
     // 1993.6 PPR at the motor
     // inches / revolution?
-    private final double mArmExtendTicksPerInch = 1993.6 / 10;
+    private final double mArmExtendTicksPerInch = 1993.6 / ;
     // Max extension of the arm in inches
     private final double mArmExtendMaxInches = 40.0;
+    // Base length of the arm, including the distance we want to keep from the floor (on an angle)
+    private final double mArmBaseLenInches = ;
+    // Height of the arm pivot from the floor
+    private final double mArmPivotHeightInches = ;
     // Power level for slide motor
     private final double mSlideMotorPower = 1.0;
+    // Whether or not we're currently utilizing manual extension to pick up samples
+    private boolean mManualExtension;
 
     /**
      * Initializes the Arm object
@@ -57,10 +65,12 @@ public class Arm {
         mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         mLiftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        mSlidePosition = 0;
+        mArmExtendTicks = 0;
+        mArmExtendInches = 0;
         mSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mSlideMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        mManualExtension = false;
     }
 
     /**
@@ -94,7 +104,8 @@ public class Arm {
             inches = mArmExtendMaxInches;
         }
         // convert inches to motor ticks
-        mSlidePosition = (int)(inches * mArmExtendTicksPerInch);
+        mArmExtendTicks = (int)(inches * mArmExtendTicksPerInch);
+        mArmExtendInches = inches;
     }
 
     /**
@@ -114,6 +125,7 @@ public class Arm {
         }
         // The extension is manually controlled by the left thumbstick
         // use HydraConstants.joyStickDeadBand
+        mManualExtension = false;
         if ( /* check joystick against HydraConstants.joyStickDeadBand */ ) {
             /* set power for the motor based on the joystick, bound by 0 and max position */
             // automatically raise the arm while we extend to keep from crashing into the floor
@@ -128,6 +140,26 @@ public class Arm {
      * Uses run-to-position to actuate the linear slides for arm extension
      */
     public void Process() {
+        // Get the current slide position to compare
+        int currentSlide = mSlideMotor.getCurrentPosition();
+        // If we're close then we don't need to do anything
+        if (Math.abs(currentSlide - mArmExtendTicks) > 5) {
+            mSlideMotor.setTargetPosition(mArmExtendTicks);
+            mSlideMotor.setPower(mSlideMotorPower);
+            mSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        } else {
+            mSlideMotor.setPower(0);
+        }
+        // Telemetry for debugging
+        mOp.mTelemetry.addData("Slide Pos", currentSlide);
+        mOp.mTelemetry.addData("Slide Target", mArmExtendTicks);
+        if (mManualExtension) {
+            // override the set angle and set based on the extension
+            // hypotenuse is the arm
+            // adjacent is the vertical we are mounted to (extended to the floor)
+            // use cos to get the set angle
+            SetLiftArmAngle(Math.acos((mArmBaseLenInches + mArmExtendInches) / mArmPivotHeightInches));
+        }
         // Get current position for calculations
         int currentPos = mLiftMotor.getCurrentPosition();
         // Calculate the pid to get from current position to desired
@@ -142,19 +174,6 @@ public class Arm {
         mOp.mTelemetry.addData("Lift Pos", currentPos);
         mOp.mTelemetry.addData("Lift Target", mLiftPositionTicks);
         mOp.mTelemetry.addData("Lift Power", power);
-        // Get the current slide position to compare
-        int currentSlide = mSlideMotor.getCurrentPosition();
-        // If we're close then we don't need to do anything
-        if (Math.abs(currentSlide - mSlidePosition) > 5) {
-            mSlideMotor.setTargetPosition(mSlidePosition);
-            mSlideMotor.setPower(mSlideMotorPower);
-            mSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        } else {
-            mSlideMotor.setPower(0);
-        }
-        // Telemetry for debugging
-        mOp.mTelemetry.addData("Slide Pos", currentSlide);
-        mOp.mTelemetry.addData("Slide Target", mSlidePosition);
     }
 
     public boolean LiftBusy() {
