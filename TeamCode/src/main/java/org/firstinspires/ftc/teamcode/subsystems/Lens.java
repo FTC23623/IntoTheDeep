@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
-import org.firstinspires.ftc.teamcode.types.HydraSampleColor;
+import org.firstinspires.ftc.teamcode.types.SampleColor;
 
 public class Lens {
     private HuskyLens mHusky;
@@ -17,11 +17,11 @@ public class Lens {
         mHusky.selectAlgorithm(HuskyLens.Algorithm.COLOR_RECOGNITION);
     }
 
-    public HydraSampleColor GetDetectedSample() {
+    public SampleColor GetDetectedSample() {
         HuskyLens.Block[] blocks = mHusky.blocks();
         // if nothing is detected, leave now
         if (blocks.length == 0) {
-            return HydraSampleColor.SampleColorNone;
+            return SampleColor.None;
         }
         // position
         // x/y of the center of the object
@@ -46,16 +46,16 @@ public class Lens {
         return GetColorFromHuskyId(blocks[closestToCenter].id);
     }
 
-    private HydraSampleColor GetColorFromHuskyId(int id) {
+    private SampleColor GetColorFromHuskyId(int id) {
         switch (id) {
             case 1:
-                return HydraSampleColor.SampleColorBlue;
+                return SampleColor.Blue;
             case 2:
-                return HydraSampleColor.SampleColorRed;
+                return SampleColor.Red;
             case 3:
-                return HydraSampleColor.SampleColorYellow;
+                return SampleColor.Yellow;
             default:
-                return HydraSampleColor.SampleColorNone;
+                return SampleColor.None;
         }
     }
 

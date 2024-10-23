@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.types;
 
-public final class HydraConstants {
+public final class Constants {
     public static final boolean fieldCentricDrive = true;
     public static final double trgBtnThresh = 0.1;
     public static final double driveBoosted = 1;

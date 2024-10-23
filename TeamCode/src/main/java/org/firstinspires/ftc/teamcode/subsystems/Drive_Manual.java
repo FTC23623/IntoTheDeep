@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
-import org.firstinspires.ftc.teamcode.types.HydraConstants;
+import org.firstinspires.ftc.teamcode.types.Constants;
 
 public class Drive_Manual extends Drive {
     private com.qualcomm.robotcore.hardware.Gamepad mGamepad;
@@ -41,7 +41,7 @@ public class Drive_Manual extends Drive {
         // Get driver controller input
         drive = mGamepad.left_stick_y;
         strafe = -mGamepad.left_stick_x * 1.1;
-        if (mGamepad.cross && HydraConstants.fieldCentricDrive) {
+        if (mGamepad.cross && Constants.fieldCentricDrive) {
             // snap to the nearest 90 deg
             double snapHeading = yaw;
             if (yaw >= -180 && yaw <= -135) {
@@ -61,14 +61,14 @@ public class Drive_Manual extends Drive {
         }
         rotX = strafe * Math.cos(-yaw / 180 * Math.PI) - drive * Math.sin(-yaw / 180 * Math.PI);
         rotY = strafe * Math.sin(-yaw / 180 * Math.PI) + drive * Math.cos(-yaw / 180 * Math.PI);
-        if (mGamepad.circle && HydraConstants.fieldCentricDrive) {
+        if (mGamepad.circle && Constants.fieldCentricDrive) {
             mImu.ResetYaw();
         }
         // Set max drive power based on driver input
-        if (mGamepad.left_trigger > HydraConstants.trgBtnThresh) {
+        if (mGamepad.left_trigger > Constants.trgBtnThresh) {
             // Drive slower for better control
             driveMaxPower = cDriveSlow;
-        } else if (mGamepad.right_trigger > HydraConstants.trgBtnThresh) {
+        } else if (mGamepad.right_trigger > Constants.trgBtnThresh) {
             // Drive faster for fun
             driveMaxPower = cDriveBoosted;
         } else {
@@ -83,7 +83,7 @@ public class Drive_Manual extends Drive {
             max = 1;
         }
         // Front left power
-        if (HydraConstants.fieldCentricDrive) {
+        if (Constants.fieldCentricDrive) {
             frontLeftPower = rotY + rotX;
         } else {
             frontLeftPower = drive + strafe;
@@ -91,7 +91,7 @@ public class Drive_Manual extends Drive {
         frontLeftPower = frontLeftPower + rotate;
         frontLeftPower = frontLeftPower / max;
         // Rear left power
-        if (HydraConstants.fieldCentricDrive) {
+        if (Constants.fieldCentricDrive) {
             rearLeftPower = rotY - rotX;
         } else {
             rearLeftPower = drive - strafe;
@@ -99,7 +99,7 @@ public class Drive_Manual extends Drive {
         rearLeftPower = rearLeftPower + rotate;
         rearLeftPower = rearLeftPower / max;
         // Front right power
-        if (HydraConstants.fieldCentricDrive) {
+        if (Constants.fieldCentricDrive) {
             frontRightPower = rotY - rotX;
         } else {
             frontRightPower = drive - strafe;
@@ -107,7 +107,7 @@ public class Drive_Manual extends Drive {
         frontRightPower = frontRightPower - rotate;
         frontRightPower = frontRightPower / max;
         // Rear right power
-        if (HydraConstants.fieldCentricDrive) {
+        if (Constants.fieldCentricDrive) {
             rearRightPower = rotY + rotX;
         } else {
             rearRightPower = drive + strafe;

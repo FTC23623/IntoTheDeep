@@ -2,11 +2,18 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
+import org.firstinspires.ftc.teamcode.types.ArmActions;
+import org.firstinspires.ftc.teamcode.types.ArmMoveStates;
+import org.firstinspires.ftc.teamcode.types.ArmPositions;
+import org.firstinspires.ftc.teamcode.types.Constants;
+import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
 @Config
 public class Arm {
@@ -14,40 +21,87 @@ public class Arm {
     private PIDController mPID;
     private DcMotor mLiftMotor;
     private DcMotor mSlideMotor;
+    private Servo mWristServo;
+    private RevTouchSensor mExtendHomeSwitch;
+    private RevTouchSensor mLiftHomeSwitch;
+    private com.qualcomm.robotcore.hardware.Gamepad mControl;
     // Lift arm PIDF controller gains
-    private final double mLiftP = 0.004;
-    private final double mLiftI = 0.0001;
-    private final double mLiftD = 0.0001;
-    private final double mLiftF = 0.1;
+    // TODO: private after tune
+    public static double mLiftP = 0.004;
+    // TODO: private after tune
+    public static double mLiftI = 0.0001;
+    // TODO: private after tune
+    public static double mLiftD = 0.0001;
+    // TODO: private after tune
+    public static double mLiftF = 0.1;
     // Lift arm motor ticks per degree
     // 1993.6 PPR at the motor
     // 2x1 gear
+    // TODO: verify this value
     private final double mLiftTicksPerDegree = 1993.6 / 180.0;
     // Lift arm desired position in ticks
     private int mLiftPositionTicks;
     // Lift arm desired position in degrees
     private double mLiftPositionDeg;
     // Lift arm motor zero position (home)
-    public static double mLiftZeroPosDeg = -15.0;
+    // TODO: verify this value
+    public static double mLiftZeroPosDeg = -20.0;
     // Lift arm motor max lift position
-    public static double mLiftMaxPosDeg = 115.0;
+    // TODO: verify this value
+    public static double mLiftMaxPosDeg = 99.0;
+    // Lift motor boundaries for auto wrist angles
+    private final double mLiftBoundaryFloorDeg = 0.0;
+    private final double mLiftBoundaryChamberDeg = 80.0;
     // Slide motor desired position in ticks
-    public static int mArmExtendTicks;
+    private int mArmExtendTicks;
     // Slide extension in inches
-    public static double mArmExtendInches;
+    private double mArmExtendInches;
     // 1993.6 PPR at the motor
     // inches / revolution?
-    private final double mArmExtendTicksPerInch = 1993.6 / ;
+    // TODO: verify this value
+    private final double mArmExtendTicksPerInch = 1993.6 / 4.72441;
     // Max extension of the arm in inches
-    private final double mArmExtendMaxInches = 40.0;
+    // TODO: verify this value
+    // max physically possible 27.95 inches
+    private final double mArmExtendMaxInches = 18.5;
     // Base length of the arm, including the distance we want to keep from the floor (on an angle)
-    private final double mArmBaseLenInches = ;
-    // Height of the arm pivot from the floor
-    private final double mArmPivotHeightInches = ;
+    // TODO: verify this value
+    private final double mArmBaseLenInches = 14.7;
+    // Height of the bottom of the arm from the floor
+    // TODO: verify this value
+    private final double mArmPivotHeightInches = 7.76;
     // Power level for slide motor
     private final double mSlideMotorPower = 1.0;
     // Whether or not we're currently utilizing manual extension to pick up samples
     private boolean mManualExtension;
+    // minimum possible angle of the wrist
+    // TODO: get this value
+    private final double mWristMinAngle = 0;
+    // maximum possible angle of the wrist
+    // TODO: get this value
+    private final double mWristMaxAngle = 270;
+    // max position value for the wrist servo
+    private final double mWristServoMaxPos = 1.0;
+    // min position value for the wrist servo
+    private final double mWristServoMinPos = -1.0;
+    // position to set for the wrist servo
+    private double mServoPosition;
+    // Trim value to point more towards the floor when scoring at the chamber
+    // This is the angle from floor parallel towards the floor
+    // TODO: make private after tune
+    public static double mWristChamberTrimTowardsFloor = 20;
+    // Trim value to point more towards the sky when scoring at the basket
+    // This is the angle from floor parallel towards the sky
+    // TODO: make private after tune
+    public static double mWristBasketTrimTowardsSky = 75;
+    public static boolean mEnableAutoAngles = true;
+    private ArmActions mAction;
+    private ArmActions mLastActiveAction;
+    double mLiftPositions[] = {};
+    double mExtendPositions[];
+    private ArmMoveStates mMoveState;
+    int mArmPosIdx;
+    private double mManualExtendInput;
 
     /**
      * Initializes the Arm object
@@ -56,8 +110,12 @@ public class Arm {
      */
     public Arm(HydraOpMode opMode) {
         mOp = opMode;
+        mControl = mOp.mOperatorGamepad;
         mLiftMotor = opMode.mHardwareMap.get(DcMotorEx.class, "liftMotor");
         mSlideMotor = opMode.mHardwareMap.get(DcMotorEx.class, "slideMotor");
+        mWristServo = opMode.mHardwareMap.get(Servo.class, "wristServo");
+        mExtendHomeSwitch = opMode.mHardwareMap.get(RevTouchSensor.class, "extendHomeSwitch");
+        mLiftHomeSwitch = opMode.mHardwareMap.get(RevTouchSensor.class, "liftHomeSwitch");
         mPID = new PIDController(mLiftP, mLiftI, mLiftD);
         mLiftPositionTicks = 0;
         mLiftPositionDeg = mLiftZeroPosDeg;
@@ -71,6 +129,12 @@ public class Arm {
         mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mSlideMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         mManualExtension = false;
+        mServoPosition = mWristServo.getPosition();
+        mAction = ArmActions.Idle;
+        mMoveState = ArmMoveStates.ExtendHome;
+        mArmPosIdx = 0;
+        mManualExtendInput = 0;
+        mLastActiveAction = ArmActions.Idle;
     }
 
     /**
@@ -105,7 +169,26 @@ public class Arm {
         }
         // convert inches to motor ticks
         mArmExtendTicks = (int)(inches * mArmExtendTicksPerInch);
+        // keep this around for later math
         mArmExtendInches = inches;
+    }
+
+    /**
+     * Set the angle of the wrist
+     * @param degrees: angle in degrees
+     */
+    public void SetWristAngle(double degrees) {
+        // check the bounds of the input
+        if (degrees < mWristMinAngle) {
+            degrees = mWristMinAngle;
+        } else if (degrees > mWristMaxAngle) {
+            degrees = mWristMaxAngle;
+        }
+        // convert the degrees to the servo position
+        double angleRange = mWristMaxAngle - mWristMinAngle;
+        double percent = (degrees - mWristMinAngle) / angleRange;
+        double servoRange = mWristServoMaxPos - mWristServoMinPos;
+        mServoPosition = servoRange * percent;
     }
 
     /**
@@ -113,53 +196,177 @@ public class Arm {
      * This is not used for auto opmodes
      */
     public void HandleUserInput() {
-        // The arm lift positions are set by the d-pad(?)
-        // we only want to accept user commands for this if the slides are fully retracted
-        if ( /* fill in logic to avoid changing arm angle while extended */ ) {
-            // set the up position for the arm
-            if ( /* button for lifting arm up */ ) {
-
-            } else if ( /* button for moving arm home */) {
-
-            }
-        }
-        // The extension is manually controlled by the left thumbstick
-        // use HydraConstants.joyStickDeadBand
+        mManualExtendInput = mControl.left_stick_y;
         mManualExtension = false;
-        if ( /* check joystick against HydraConstants.joyStickDeadBand */ ) {
-            /* set power for the motor based on the joystick, bound by 0 and max position */
-            // automatically raise the arm while we extend to keep from crashing into the floor
-            mManualExtension = true;
-        } else if ( /* check button that we will use to extend the arm to the bucket */ ) {
+        if (mControl.cross) {
+            SetArmAction(ArmActions.RunHome);
+        } else if (mControl.square) {
+            SetArmAction(ArmActions.RunPickup);
+        } else if (mControl.circle) {
+            SetArmAction(ArmActions.RunScoreLow);
+        } else if (mControl.triangle) {
+            SetArmAction(ArmActions.RunScoreHigh);
+        } else if (Math.abs(mManualExtendInput) > Constants.joyStickDeadBand) {
+            if (LiftHome() && ExtendHome()) {
+                SetArmAction(ArmActions.RunManual);
+                mManualExtension = true;
+            }
+        } else {
+            SetArmAction(ArmActions.Idle);
+        }
+    }
 
+    public void SetArmAction(ArmActions action) {
+        if (action != mAction) {
+            if (action == ArmActions.Idle) {
+                mLastActiveAction = mAction;
+            }
+            mAction = action;
+            switch (mAction) {
+                case RunHome:
+                    mArmPosIdx = ArmPositions.valueOf("ArmPosition0Home").ordinal();
+                    if (mLastActiveAction != mAction) {
+                        mMoveState = ArmMoveStates.ExtendHome;
+                    }
+                    break;
+                case RunPickup:
+                    if (mOp.mTargetElement == ElementTypes.Sample) {
+                        mArmPosIdx = ArmPositions.valueOf("ArmPosition2FloorPickup").ordinal();
+                    } else {
+                        mArmPosIdx = ArmPositions.valueOf("ArmPosition3SpecimenPickup").ordinal();
+                    }
+                    if (mLastActiveAction != mAction) {
+                        mMoveState = ArmMoveStates.ExtendHome;
+                    }
+                    break;
+                case RunScoreLow:
+                    if (mOp.mTargetElement == ElementTypes.Sample) {
+                        mArmPosIdx = ArmPositions.valueOf("ArmPosition4SpecimenLowerChamber").ordinal();
+                    } else {
+                        mArmPosIdx = ArmPositions.valueOf("ArmPosition6SampleLowerBasket").ordinal();
+                    }
+                    if (mLastActiveAction != mAction) {
+                        mMoveState = ArmMoveStates.ExtendHome;
+                    }
+                    break;
+                case RunScoreHigh:
+                    if (mOp.mTargetElement == ElementTypes.Sample) {
+                        mArmPosIdx = ArmPositions.valueOf("ArmPosition5SpecimenUpperChamber").ordinal();
+                    } else {
+                        mArmPosIdx = ArmPositions.valueOf("ArmPosition7SampleUpperBasket").ordinal();
+                    }
+                    if (mLastActiveAction != mAction) {
+                        mMoveState = ArmMoveStates.ExtendHome;
+                    }
+                    break;
+                case Idle:
+                case RunManual:
+                    break;
+            }
         }
     }
 
     /**
-     * Uses PID controller to keep the arm at the desired set position
-     * Uses run-to-position to actuate the linear slides for arm extension
+     * Calls processes for each system in this subsystem
+     * Handles automatic set angles based on other inputs
      */
     public void Process() {
-        // Get the current slide position to compare
-        int currentSlide = mSlideMotor.getCurrentPosition();
-        // If we're close then we don't need to do anything
-        if (Math.abs(currentSlide - mArmExtendTicks) > 5) {
-            mSlideMotor.setTargetPosition(mArmExtendTicks);
-            mSlideMotor.setPower(mSlideMotorPower);
-            mSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        } else {
-            mSlideMotor.setPower(0);
+        if (mEnableAutoAngles) {
+            if (mLiftPositionDeg < mLiftBoundaryFloorDeg) {
+                // for this case we want to be parallel to the floor
+                // in the case of arm angle < 0
+                // if you draw the picture this angle is 180 minus the angle the arm is below the plane parallel to the floor
+                // since this angle is negative in our system, we just add 180
+                // in the case of arm angle > 0 and < 90
+                // if you draw the picture, this angle is 180 plus the angle the arm is above the plane parallel to the floor
+                // same math!
+                SetWristAngle(180 + mLiftPositionDeg);
+            } else if (mLiftPositionDeg >= mLiftBoundaryFloorDeg && mLiftPositionDeg < mLiftBoundaryChamberDeg) {
+                // scoring at the chamber
+                // set parallel to the floor and then add a trim value we can tune
+                // parallel to the floor is the same math here
+                double angle = 180 + mLiftPositionDeg;
+                // trim value to point the intake more towards the floor
+                angle += mWristChamberTrimTowardsFloor;
+                SetWristAngle(angle);
+            } else if (mLiftPositionDeg >= mLiftBoundaryFloorDeg) {
+                // scoring at the baskets
+                // set parallel to the floor and then add a trim value we can tune
+                // this angle actually ends up just being the same as the arm angle
+                double angle = mLiftPositionDeg;
+                // trim value to point more towards the sky
+                angle += mWristBasketTrimTowardsSky;
+                SetWristAngle(mLiftPositionDeg);
+            }
         }
-        // Telemetry for debugging
-        mOp.mTelemetry.addData("Slide Pos", currentSlide);
-        mOp.mTelemetry.addData("Slide Target", mArmExtendTicks);
-        if (mManualExtension) {
-            // override the set angle and set based on the extension
-            // hypotenuse is the arm
-            // adjacent is the vertical we are mounted to (extended to the floor)
-            // use cos to get the set angle
-            SetLiftArmAngle(Math.acos((mArmBaseLenInches + mArmExtendInches) / mArmPivotHeightInches));
+
+        switch (mAction) {
+            case RunHome:
+                if (!ExtendHome()) {
+                    mArmExtendInches = 0;
+                } else if (!LiftHome()) {
+                    mLiftPositionDeg = mLiftZeroPosDeg;
+                }
+                break;
+            case RunManual:
+                // override the set angle and set based on the extension
+                // hypotenuse is the arm
+                // opposite is the parallel side of the vertical we are mounted to (extended to the floor)
+                // use sine to get the set angle
+                // -1 gets us the negative angle we're looking for
+                SetLiftArmAngle(Math.asin(-1 * mArmPivotHeightInches / (mArmBaseLenInches + mArmExtendInches)));
+                break;
+            case Idle:
+                // stop all mechanisms at their current positions
+                if (LiftBusy()) {
+                    mLiftPositionTicks = mLiftMotor.getCurrentPosition();
+                    mLiftPositionDeg = mLiftZeroPosDeg + mLiftPositionTicks / mLiftTicksPerDegree;
+                }
+                if (ExtendBusy()) {
+                    mArmExtendTicks = mSlideMotor.getCurrentPosition();
+                    mArmExtendInches = mArmExtendTicks / mArmExtendTicksPerInch;
+                }
+                mServoPosition = mWristServo.getPosition();
+                break;
+            case RunPickup:
+            case RunScoreHigh:
+            case RunScoreLow:
+                switch (mMoveState) {
+                    case ExtendHome:
+                        if (ExtendHome()) {
+                            mMoveState = ArmMoveStates.LiftAngle;
+                            mLiftPositionDeg = mLiftPositions[mArmPosIdx];
+                        } else {
+                            mArmExtendInches = 0;
+                        }
+                        break;
+                    case LiftAngle:
+                        if (!LiftBusy()) {
+                            mMoveState = ArmMoveStates.ExtendToPos;
+                            mArmExtendInches = mExtendPositions[mArmPosIdx];
+                        }
+                        break;
+                    case ExtendToPos:
+                        if (!ExtendBusy()) {
+                            mMoveState = ArmMoveStates.Done;
+                        }
+                        break;
+                    case Done:
+                        mAction = ArmActions.Idle;
+                        break;
+                }
+                break;
         }
+        // Processes for each system
+        ProcessArmAngle();
+        ProcessArmExtension();
+        ProcessWristAngle();
+    }
+
+    /**
+     * Updates the arm angle if it has changed
+     */
+    private void ProcessArmAngle() {
         // Get current position for calculations
         int currentPos = mLiftMotor.getCurrentPosition();
         // Calculate the pid to get from current position to desired
@@ -176,11 +383,84 @@ public class Arm {
         mOp.mTelemetry.addData("Lift Power", power);
     }
 
-    public boolean LiftBusy() {
-        return mLiftMotor.isBusy();
+    /**
+     * Updates the extension if it has changed
+     */
+    private void ProcessArmExtension() {
+        // Get the current slide position to compare
+        int currentSlide = mSlideMotor.getCurrentPosition();
+        if (mManualExtension) {
+            // If we're close then we don't need to do anything
+            if (Math.abs(currentSlide - mArmExtendTicks) > 5) {
+                mSlideMotor.setTargetPosition(mArmExtendTicks);
+                mSlideMotor.setPower(mSlideMotorPower);
+                mSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            } else {
+                mSlideMotor.setPower(0);
+            }
+        } else {
+            mSlideMotor.setPower(mManualExtendInput);
+        }
+        // Telemetry for debugging
+        mOp.mTelemetry.addData("Slide Pos", currentSlide);
+        mOp.mTelemetry.addData("Slide Target", mArmExtendTicks);
     }
 
+    /**
+     * Updates the wrist angle if it has changed
+     */
+    private void ProcessWristAngle() {
+        if (mWristServo.getPosition() != mServoPosition) {
+            mWristServo.setPosition(mServoPosition);
+        }
+    }
+
+    /**
+     * Returns whether the lift motor is busy
+     * @return true when the lift motor is busy
+     */
+    public boolean LiftBusy() {
+        // we can't use the busy from the motor because of gravity
+        // we have to use the position instead
+        return Math.abs(mLiftMotor.getCurrentPosition() - mLiftPositionTicks) < 15;
+    }
+
+    /**
+     * Returns whether the extension motor is busy
+     * @return true when running to position
+     */
     public boolean ExtendBusy() {
         return mSlideMotor.isBusy();
+    }
+
+    /**
+     * Returns whether the wrist servo is busy
+     * @return true when the wrist servo has not reached position
+     */
+    public boolean WristBusy() {
+        return mWristServo.getPosition() == mServoPosition;
+    }
+
+    /**
+     * Returns whether we are auto-setting the arm and wrist angles
+     * @return true when auto-set of arm and wrist angles is enabled
+     */
+    public boolean AutoMode() {
+        return mEnableAutoAngles;
+    }
+
+    /**
+     * Returns whether the arm lift is at home
+     * @return true when the lift is at the home position
+     */
+    private boolean LiftHome() {
+        return mLiftHomeSwitch.isPressed();
+    }
+    /**
+     * Returns whether the arm extension is home
+     * @return true when the extension is at the home position
+     */
+    private boolean ExtendHome() {
+        return mExtendHomeSwitch.isPressed();
     }
 }
