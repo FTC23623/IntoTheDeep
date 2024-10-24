@@ -42,12 +42,12 @@ package org.firstinspires.ftc.teamcode.types;
  *
  */
 public enum ArmPositions {
-    ArmPosition0Home,
-    ArmPosition1ManualPickup,
-    ArmPosition2FloorPickup,
-    ArmPosition3SpecimenPickup,
-    ArmPosition4SpecimenLowerChamber,
-    ArmPosition5SpecimenUpperChamber,
-    ArmPosition6SampleLowerBasket,
-    ArmPosition7SampleUpperBasket
+    Pos0Home,
+    Pos1ManualPickup,
+    Pos2FloorPickup,
+    Pos3SpecimenPickup,
+    Pos4SpecimenLowerChamber,
+    Pos5SpecimenUpperChamber,
+    Pos6SampleLowerBasket,
+    Pos7SampleUpperBasket
 }
