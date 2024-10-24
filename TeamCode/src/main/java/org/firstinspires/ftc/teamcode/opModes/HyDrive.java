@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Imu;
 import org.firstinspires.ftc.teamcode.subsystems.Imu_Hub;
 import org.firstinspires.ftc.teamcode.subsystems.Lens;
 import org.firstinspires.ftc.teamcode.subsystems.Lights;
+import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
 @Config
 @TeleOp(name = "HyDrive-Java")
@@ -32,9 +33,11 @@ public class HyDrive extends LinearOpMode {
   @Override
   public void runOpMode() {
     // Initialization Routines
+    final int sleepTime = 20;
+    final ElementTypes elementType = ElementTypes.Sample;
     telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1,
-            gamepad2);
+            gamepad2, elementType, sleepTime);
     mImu = new Imu_Hub(mOpMode);
     mDrive = new Drive_Manual(mOpMode, mImu);
     mLens = new Lens(mOpMode);
@@ -56,7 +59,7 @@ public class HyDrive extends LinearOpMode {
       mArm.Process();
       // Update telemetry once for all processes
       telemetry.update();
-      sleep(20);
+      sleep(sleepTime);
     }
   }
 }
