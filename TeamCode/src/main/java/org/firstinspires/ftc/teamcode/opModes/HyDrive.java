@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.Drive_Manual;
 import org.firstinspires.ftc.teamcode.subsystems.Imu;
 import org.firstinspires.ftc.teamcode.subsystems.Imu_Hub;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Lens;
 import org.firstinspires.ftc.teamcode.subsystems.Lights;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
@@ -23,9 +24,10 @@ public class HyDrive extends LinearOpMode {
   private HydraOpMode mOpMode;
   private Imu mImu;
   private Drive mDrive;
-  private Lens mLens;
-  private Lights mLights;
+  // private Lens mLens;
+  // private Lights mLights;
   private Arm mArm;
+  private Intake mIntake;
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.
@@ -40,23 +42,34 @@ public class HyDrive extends LinearOpMode {
             gamepad2, elementType, sleepTime);
     mImu = new Imu_Hub(mOpMode);
     mDrive = new Drive_Manual(mOpMode, mImu);
-    mLens = new Lens(mOpMode);
-    mLights = new Lights(mOpMode);
+    // mLens = new Lens(mOpMode);
+    // mLights = new Lights(mOpMode);
     mArm = new Arm(mOpMode);
+    mIntake = new Intake(mOpMode);
     while (!mImu.Connected() || mImu.Calibrating()) {
       if (isStopRequested() || !opModeIsActive()) {
         break;
       }
     }
     mImu.SetYawOffset(OpmodeHeading.GetOffset());
-    telemetry.addData("Auton Yaw", OpmodeHeading.GetOffset());
+    telemetry.addData("Auto Yaw", OpmodeHeading.GetOffset());
     telemetry.update();
     waitForStart();
     while (opModeIsActive()) {
+      if (mArm.Startup(false)) {
+        break;
+      }
+      sleep(sleepTime);
+    }
+    while (opModeIsActive()) {
+      // Pass user input to the systems
+      mArm.HandleUserInput();
+      mIntake.HandleUserInput();
       // System processes
       mDrive.Process();
-      mLights.SetColor(mLens.GetDetectedSample());
+      // mLights.SetColor(mLens.GetDetectedSample());
       mArm.Process();
+      mIntake.Process();
       // Update telemetry once for all processes
       telemetry.update();
       sleep(sleepTime);

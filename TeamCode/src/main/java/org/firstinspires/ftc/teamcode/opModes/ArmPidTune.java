@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.types.ElementTypes;
 public class ArmPidTune extends LinearOpMode {
     public static double LiftPosDeg = 0;
     public static double ExtensionPosInches = 0;
-    public static double WristPos = 0;
+    public static double WristPos = 1.0;
     @Override
     public void runOpMode() {
         final int sleepTime = 20;
@@ -27,7 +27,13 @@ public class ArmPidTune extends LinearOpMode {
         Intake intake = new Intake(opMode);
         waitForStart();
         while (opModeIsActive()) {
-            if (!arm.TuneMode()) {
+            if (arm.Startup(false)) {
+                break;
+            }
+            sleep(sleepTime);
+        }
+        while (opModeIsActive()) {
+            if (arm.TuneMode()) {
                 arm.SetLiftArmAngle(LiftPosDeg);
                 arm.SetArmExtension(ExtensionPosInches);
                 arm.SetWristPos(WristPos);

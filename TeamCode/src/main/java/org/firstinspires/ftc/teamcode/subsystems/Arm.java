@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
@@ -17,49 +18,36 @@ import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
 @Config
 public class Arm {
-    private HydraOpMode mOp;
-    private PIDController mPID;
-    private DcMotor mLiftMotor;
-    private DcMotor mSlideMotor;
-    private Servo mWristServo;
-    private RevTouchSensor mExtendHomeSwitch;
-    private RevTouchSensor mLiftHomeSwitch;
-    private com.qualcomm.robotcore.hardware.Gamepad mControl;
+    private final HydraOpMode mOp;
+    private final PIDController mPID;
+    private final DcMotorEx mLiftMotor;
+    private final DcMotorEx mSlideMotor;
+    private final Servo mWristServo;
+    private final RevTouchSensor mExtendHomeSwitch;
+    private final RevTouchSensor mLiftHomeSwitch;
+    private final com.qualcomm.robotcore.hardware.Gamepad mControl;
     // Lift arm PIDF controller gains
     private final double mLiftP = 0.004;
     private final double mLiftI = 0.0009;
     private final double mLiftD = 0.0001;
-    private final double mLiftFRetracted = 0.18;
-    // TODO: make private
-    public static double mLiftFExtended = 0.20;
+    private final double mLiftFRetracted = 0.2;
+    private final double mLiftFExtended = 0.48;
     // Lift arm motor ticks per degree
     // 1993.6 PPR at the motor
     // 2x1 gear
-    // TODO: verify this value
     private final double mLiftTicksPerDegree = 1993.6 / 180.0;
     // Lift arm desired position in ticks
     private int mLiftPositionTicks;
-    // Lift arm desired position in degrees
-    private double mLiftPositionDeg;
     // Lift arm motor zero position (home)
-    // TODO: verify this value
     private final double mLiftZeroPosDeg = -20.0;
     // Lift arm motor max lift position
-    // TODO: verify this value
     private final double mLiftMaxPosDeg = 99.0;
-    // Lift motor boundaries for auto wrist angles
-    private final double mLiftBoundaryFloorDeg = 0.0;
-    private final double mLiftBoundaryChamberDeg = 80.0;
     // Slide motor desired position in ticks
     private int mArmExtendTicks;
-    // Slide extension in inches
-    private double mArmExtendInches;
-    // 1993.6 PPR at the motor
-    // inches / revolution?
-    // TODO: verify this value
+    // 384.5 PPR at the motor
+    // 4.72441 inches / revolution
     private final double mArmExtendTicksPerInch = 384.5 / 4.72441;
     // Max extension of the arm in inches
-    // TODO: verify this value
     // max physically possible 27.95 inches
     private final double mArmExtendMaxInches = 18.5;
     // Base length of the arm, including the distance we want to keep from the floor (on an angle)
@@ -68,18 +56,22 @@ public class Arm {
     // Height of the bottom of the arm from the floor
     // TODO: verify this value
     private final double mArmPivotHeightInches = 7.76;
+    // Height to keep the intake pivot off the floor in manual
+    private final double mWristPivotHeightInches = 5.0;
+    // Ratio used for arm angle math
+    private final double mManualArmAutoAngleRatio;
     // Power level for slide motor
     private final double mSlideMotorPower = 1.0;
     // Whether or not we're currently utilizing manual extension to pick up samples
     private boolean mManualMode;
     // max position value for the wrist servo
-    private final double mWristServoMaxPos = 1.0;
+    private final double mWristServoMaxPos = 1;
     // min position value for the wrist servo
-    private final double mWristServoMinPos = -0.5;
+    private final double mWristServoMinPos = 0.3;
     // min time in seconds for full traversing of wrist servo range
-    private final double mWristServoTravelTime = 0.5;
+    private final double mWristServoTravelTime = 5;
     // how much to increment the wrist servo position by every time the loop runs
-    private double mWristServoManualIncrement;
+    private final double mWristServoManualIncrement;
     // manual controller input for the wrist servo
     private double mManualWristInput;
     // position to set for the wrist servo
@@ -90,34 +82,34 @@ public class Arm {
     // predetermined lift and extend positions for all arm positions
     private final double Pos0Home_Lift = mLiftZeroPosDeg;
     private final double Pos0Home_Extend = 0.0;
-    private final double Pos0Home_Wrist = 1.0;
+    private final double Pos0Home_Wrist = 0.53;
     private final double Pos1ManualPickup_Lift = -10.0;
     private final double Pos1ManualPickup_Extend = 0.0;
-    private final double Pos1ManualPickup_Wrist = -0.3;
+    private final double Pos1ManualPickup_Wrist = 0.75;
     private final double Pos2FloorPickup_Lift = mLiftZeroPosDeg;
     private final double Pos2FloorPickup_Extend = 0.0;
-    private final double Pos2FloorPickup_Wrist = -0.3;
+    private final double Pos2FloorPickup_Wrist = 0.75;
     private final double Pos3SpecimenPickup_Lift = -10.0;
     private final double Pos3SpecimenPickup_Extend = 0.0;
-    private final double Pos3SpecimenPickup_Wrist = 0.0;
-    private final double Pos4SpecimenLowerChamber_Lift = 5.0;
+    private final double Pos3SpecimenPickup_Wrist = 0.5;
+    private final double Pos4SpecimenLowerChamber_Lift = 40.0;
     private final double Pos4SpecimenLowerChamber_Extend = 0.0;
-    private final double Pos4SpecimenLowerChamber_Wrist = 0.3;
-    private final double Pos5SpecimenUpperChamber_Lift = 30.0;
-    private final double Pos5SpecimenUpperChamber_Extend = 6.0;
-    private final double Pos5SpecimenUpperChamber_Wrist = 0.3;
-    private final double Pos6SampleLowerBasket_Lift = 95.0;
-    private final double Pos6SampleLowerBasket_Extend = 6.0;
-    private final double Pos6SampleLowerBasket_Wrist = -0.1;
+    private final double Pos4SpecimenLowerChamber_Wrist = 0.7;
+    private final double Pos5SpecimenUpperChamber_Lift = 60.0;
+    private final double Pos5SpecimenUpperChamber_Extend = 6.5;
+    private final double Pos5SpecimenUpperChamber_Wrist = 0.7;
+    private final double Pos6SampleLowerBasket_Lift = 99.0;
+    private final double Pos6SampleLowerBasket_Extend = 0.0;
+    private final double Pos6SampleLowerBasket_Wrist = 0.3;
     private final double Pos7SampleUpperBasket_Lift = 99.0;
     private final double Pos7SampleUpperBasket_Extend = 18.5;
-    private final double Pos7SampleUpperBasket_Wrist = -0.1;
+    private final double Pos7SampleUpperBasket_Wrist = 0.4;
     // create arrays with the preset values for quick lookup
-    double mLiftPositions[] = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
+    double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
             Pos4SpecimenLowerChamber_Lift, Pos5SpecimenUpperChamber_Lift, Pos6SampleLowerBasket_Lift, Pos7SampleUpperBasket_Lift };
-    double mExtendPositions[] = { Pos0Home_Extend, Pos1ManualPickup_Extend, Pos2FloorPickup_Extend, Pos3SpecimenPickup_Extend,
+    double[] mExtendPositions = { Pos0Home_Extend, Pos1ManualPickup_Extend, Pos2FloorPickup_Extend, Pos3SpecimenPickup_Extend,
             Pos4SpecimenLowerChamber_Extend, Pos5SpecimenUpperChamber_Extend, Pos6SampleLowerBasket_Extend, Pos7SampleUpperBasket_Extend };
-    double mWristPositions[] = { Pos0Home_Wrist, Pos1ManualPickup_Wrist, Pos2FloorPickup_Wrist, Pos3SpecimenPickup_Wrist,
+    double[] mWristPositions = { Pos0Home_Wrist, Pos1ManualPickup_Wrist, Pos2FloorPickup_Wrist, Pos3SpecimenPickup_Wrist,
             Pos4SpecimenLowerChamber_Wrist, Pos5SpecimenUpperChamber_Wrist, Pos6SampleLowerBasket_Wrist, Pos7SampleUpperBasket_Wrist };
     // index into the position arrays for current movement
     private int mArmPosIdx;
@@ -125,6 +117,10 @@ public class Arm {
     private ArmMoveStates mMoveState;
     // user supplied extension power
     private double mManualExtendInput;
+    // state for running to home at the beginning of the opmode
+    private int mArmResetState;
+    // timeout to use for resetting the arm
+    ElapsedTime mArmResetTimer;
 
     /**
      * Initializes the Arm object
@@ -134,32 +130,112 @@ public class Arm {
     public Arm(HydraOpMode opMode) {
         mOp = opMode;
         mControl = mOp.mOperatorGamepad;
-        mLiftMotor = opMode.mHardwareMap.get(DcMotorEx.class, "liftMotor");
-        mSlideMotor = opMode.mHardwareMap.get(DcMotorEx.class, "slideMotor");
-        mWristServo = opMode.mHardwareMap.get(Servo.class, "wristServo");
-        mExtendHomeSwitch = opMode.mHardwareMap.get(RevTouchSensor.class, "extendHomeSwitch");
-       // mLiftHomeSwitch = opMode.mHardwareMap.get(RevTouchSensor.class, "liftHomeSwitch");
+        mLiftMotor = mOp.mHardwareMap.get(DcMotorEx.class, "liftMotor");
+        mSlideMotor = mOp.mHardwareMap.get(DcMotorEx.class, "slideMotor");
+        mWristServo = mOp.mHardwareMap.get(Servo.class, "wristServo");
+        mExtendHomeSwitch = mOp.mHardwareMap.get(RevTouchSensor.class, "extendHomeSwitch");
+        mLiftHomeSwitch = mOp.mHardwareMap.get(RevTouchSensor.class, "liftHomeSwitch");
         mPID = new PIDController(mLiftP, mLiftI, mLiftD);
         mLiftPositionTicks = 0;
-        mLiftPositionDeg = mLiftZeroPosDeg;
-        mLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        mLiftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         mArmExtendTicks = 0;
-        mArmExtendInches = 0;
-        mSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        mSlideMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         mManualMode = false;
-        mServoPosition = 0.0;
+        mServoPosition = Pos0Home_Wrist;
         mAction = ArmActions.Idle;
         mMoveState = ArmMoveStates.ExtendHome;
         mArmPosIdx = 0;
         mManualExtendInput = 0.0;
         mLastActiveAction = ArmActions.Idle;
-        mWristServoManualIncrement = (mWristServoMaxPos - mWristServoMinPos) / (mWristServoTravelTime / mOp.mLoopTime);
+        mWristServoManualIncrement = (mWristServoMaxPos - mWristServoMinPos) / (mWristServoTravelTime / (double)mOp.mLoopTime);
         mManualWristInput = 0.0;
+        mManualArmAutoAngleRatio = (mArmPivotHeightInches / mWristPivotHeightInches) - 1;
+        mArmResetState = 0;
+        mArmResetTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    }
+
+    /**
+     * Gets the robot to the home position
+     * Call once before entering the main loop, blocking with timeouts
+     */
+    public boolean Startup(boolean handOff) {
+        switch (mArmResetState) {
+            case 0:
+                mArmResetTimer.reset();
+                if (handOff) {
+                    // another opmode already ran, don't need to unfold
+                    mArmResetState = 2;
+                } else {
+                    // since this is a fresh opmode, reset everything
+                    mLiftMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+                    mLiftMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                    mLiftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+                    mSlideMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+                    mSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                    mSlideMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+                    // start by lifting the arm so we can get the intake out of the way
+                    mLiftMotor.setTargetPosition((int)(mLiftMotor.getCurrentPosition() + 10 * mLiftTicksPerDegree));
+                    mLiftMotor.setPower(0.3);
+                    mLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    mArmResetState = 1;
+                }
+                break;
+            case 1:
+                // wait for the lift to get to the position we set
+                if (LiftBusy()) {
+                    break;
+                } else {
+                    mArmResetState = 2;
+                    // fall through
+                }
+            case 2:
+                // set the wrist servo to the home position
+                // there is nothing else to do since the servo position is always absolute
+                SetWristPos(Pos0Home_Wrist);
+                ProcessWristPosition();
+                mArmResetState = 3;
+                // fall through
+            case 3:
+                // run the slides to the home position
+                if (ExtendHome()) {
+                    mArmResetState = 4;
+                    // fall through
+                } else {
+                    // go by 1/2 in at a time until we get there
+                    mSlideMotor.setTargetPosition((int)(mSlideMotor.getCurrentPosition() - 0.5 * mArmExtendTicksPerInch));
+                    mSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    mSlideMotor.setPower(0.3);
+                    break;
+                }
+            case 4:
+                // this might need to be replaced with capturing the ticks and offsetting
+                mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                // set to the home position now so we get all the state set correctly
+                SetArmExtension(Pos0Home_Extend);
+                mArmResetState = 5;
+                // fall through
+            case 5:
+                if (LiftHome()) {
+                    mArmResetState = 6;
+                    // fall through
+                } else {
+                    mLiftMotor.setTargetPosition((int)(mLiftMotor.getCurrentPosition() - 5 * mLiftTicksPerDegree));
+                    mLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    mLiftMotor.setPower(0.3);
+                    break;
+                }
+            case 6:
+                // this might need to be replaced with capturing the ticks and offsetting
+                mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                // set to the home position now so we get all the state set correctly
+                SetLiftArmAngle(Pos0Home_Lift);
+                mArmResetState = 7;
+                break;
+            default:
+                return true;
+        }
+        if (mArmResetTimer.milliseconds() >= 5000) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -177,8 +253,15 @@ public class Arm {
         double degreesFromZeroPosition = degrees - mLiftZeroPosDeg;
         // convert degrees to motor ticks
         mLiftPositionTicks = (int)(degreesFromZeroPosition * mLiftTicksPerDegree);
-        // keep this around for later math
-        mLiftPositionDeg = degrees;
+    }
+
+    /**
+     * Calculates the arm angle from ticks
+     * @param ticks: ticks to calculate from
+     * @return Angle of the arm in degrees
+     */
+    private double GetLiftAngleFromTicks(int ticks) {
+        return mLiftZeroPosDeg + (double)ticks / mLiftTicksPerDegree;
     }
 
     /**
@@ -194,8 +277,15 @@ public class Arm {
         }
         // convert inches to motor ticks
         mArmExtendTicks = (int)(inches * mArmExtendTicksPerInch);
-        // keep this around for later math
-        mArmExtendInches = inches;
+    }
+
+    /**
+     * Calculates the extension from ticks
+     * @param ticks: ticks to calculate from
+     * @return Inches of arm extension based on the tick value
+     */
+    private double GetExtensionFromTicks(int ticks) {
+        return (double)ticks / mArmExtendTicksPerInch;
     }
 
     /**
@@ -218,15 +308,24 @@ public class Arm {
      * This is not used for auto opmodes
      */
     public void HandleUserInput() {
+        // capture the current joystick values
         mManualExtendInput = mControl.left_stick_y;
         mManualWristInput = mControl.right_stick_y;
-        if (mManualExtendInput < Constants.joyStickDeadBand) {
+        // place a dead band around the center of the joysticks
+        boolean joystickValid = false;
+        if (Math.abs(mManualExtendInput) < Constants.joyStickDeadBand) {
             mManualExtendInput = 0;
+        } else {
+            joystickValid = true;
         }
-        if (mManualWristInput < Constants.joyStickDeadBand) {
+        if (Math.abs(mManualWristInput) < Constants.joyStickDeadBand) {
             mManualWristInput = 0;
+        } else {
+            joystickValid = true;
         }
+        // always default manual mode to false
         mManualMode = false;
+        // determine which action the user wants to perform
         if (mControl.cross) {
             SetArmAction(ArmActions.RunHome);
         } else if (mControl.square) {
@@ -235,17 +334,22 @@ public class Arm {
             SetArmAction(ArmActions.RunScoreLow);
         } else if (mControl.triangle) {
             SetArmAction(ArmActions.RunScoreHigh);
-        } else if (Math.abs(mManualExtendInput) > Constants.joyStickDeadBand ||
-                Math.abs(mManualWristInput) > Constants.joyStickDeadBand) {
-            if (LiftHome() && ExtendHome()) {
-                SetArmAction(ArmActions.RunManual);
-                mManualMode = true;
-            }
+        } else if (joystickValid) {
+            SetArmAction(ArmActions.RunManual);
+            mManualMode = true;
         } else {
             SetArmAction(ArmActions.Idle);
         }
+        mOp.mTelemetry.addData("Mode", mAction);
+        mOp.mTelemetry.addData("Manual", mManualMode);
+        mOp.mTelemetry.addData("Manual Extend", mManualExtendInput);
+        mOp.mTelemetry.addData("Manual Wrist", mManualWristInput);
     }
 
+    /**
+     * Set the next arm action to perform
+     * @param action: sets the action to perform
+     */
     public void SetArmAction(ArmActions action) {
         if (action != mAction) {
             if (action == ArmActions.Idle) {
@@ -305,9 +409,9 @@ public class Arm {
             case RunHome:
                 SetWristPos(Pos0Home_Wrist);
                 if (!ExtendHome()) {
-                    mArmExtendInches = Pos0Home_Extend;
+                    SetArmExtension(Pos0Home_Extend);
                 } else if (!LiftHome()) {
-                    mLiftPositionDeg = Pos0Home_Lift;
+                    SetLiftArmAngle(Pos0Home_Lift);
                 }
                 break;
             case RunManual:
@@ -316,19 +420,16 @@ public class Arm {
                 // opposite is the parallel side of the vertical we are mounted to (extended to the floor)
                 // use sine to get the set angle
                 // -1 gets us the negative angle we're looking for
-                SetLiftArmAngle(Math.asin(-1 * mArmPivotHeightInches / (mArmBaseLenInches + mArmExtendInches)));
+                double e = mArmBaseLenInches + GetExtensionFromTicks(mSlideMotor.getCurrentPosition());
+                SetLiftArmAngle(Math.asin(-1 * mArmPivotHeightInches / (e)));
+                // another option that should keep a static height off of the floor
+                //SetLiftArmAngle(Math.asin(-1 * mArmPivotHeightInches / (e + e / mManualArmAutoAngleRatio)));
                 break;
             case Idle:
                 // stop all mechanisms at their current positions
                 if (!TuneMode()) {
-                    if (LiftBusy()) {
-                        mLiftPositionTicks = mLiftMotor.getCurrentPosition();
-                        mLiftPositionDeg = mLiftZeroPosDeg + mLiftPositionTicks / mLiftTicksPerDegree;
-                    }
-                    if (ExtendBusy()) {
-                        mArmExtendTicks = mSlideMotor.getCurrentPosition();
-                        mArmExtendInches = mArmExtendTicks / mArmExtendTicksPerInch;
-                    }
+                    SetLiftArmAngle(GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition()));
+                    SetArmExtension(GetExtensionFromTicks(mSlideMotor.getCurrentPosition()));
                 }
                 break;
             case RunPickup:
@@ -338,16 +439,17 @@ public class Arm {
                     case ExtendHome:
                         if (ExtendHome()) {
                             mMoveState = ArmMoveStates.LiftAngle;
-                            mLiftPositionDeg = mLiftPositions[mArmPosIdx];
-                            mServoPosition = mWristPositions[mArmPosIdx];
+                            SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
+                            SetWristPos(mWristPositions[mArmPosIdx]);
                         } else {
-                            mArmExtendInches = 0;
+                            SetArmExtension(Pos0Home_Extend);
+                            SetWristPos(Pos0Home_Wrist);
                         }
                         break;
                     case LiftAngle:
                         if (!LiftBusy()) {
                             mMoveState = ArmMoveStates.ExtendToPos;
-                            mArmExtendInches = mExtendPositions[mArmPosIdx];
+                            SetArmExtension(mExtendPositions[mArmPosIdx]);
                         }
                         break;
                     case ExtendToPos:
@@ -376,10 +478,16 @@ public class Arm {
         int currentPos = mLiftMotor.getCurrentPosition();
         // Calculate the pid to get from current position to desired
         double pid = mPID.calculate(currentPos, mLiftPositionTicks);
-        // Factor in gravity. Cos will scale appropriately based on the angle
-        double extensionPct = (mArmExtendMaxInches - mArmExtendInches) / mArmExtendMaxInches;
+        // Factor in gravity
+        // The force from gravity is higher when the arm is extended
+        // Get percentage of arm extension
+        double extensionPct = GetExtensionFromTicks(mSlideMotor.getCurrentPosition()) / mArmExtendMaxInches;
+        // Calculate f linearly based on how far the arm is extended
         double f = mLiftFRetracted + extensionPct * (mLiftFExtended - mLiftFRetracted);
-        double ff = Math.cos(Math.toRadians(mLiftPositionDeg)) * f;
+        // Get the current angle of the arm
+        double currentPosDeg = GetLiftAngleFromTicks(currentPos);
+        // Cos will scale the force of gravity based on the current arm angle
+        double ff = Math.cos(Math.toRadians(currentPosDeg)) * f;
         // Add pid and feed forward to get the final power
         double power = pid + ff;
         // Set power to the motor
@@ -389,28 +497,23 @@ public class Arm {
         mOp.mTelemetry.addData("Lift Pos", currentPos);
         mOp.mTelemetry.addData("Lift Target", mLiftPositionTicks);
         mOp.mTelemetry.addData("Lift Power", power);
+        mOp.mTelemetry.addData("Lift Pos (deg)", currentPosDeg);
     }
 
     /**
      * Updates the extension if it has changed
      */
     private void ProcessArmExtension() {
-        // Get the current slide position to compare
-        int currentSlide = mSlideMotor.getCurrentPosition();
         if (mManualMode) {
             mSlideMotor.setPower(mManualExtendInput);
+            mSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         } else {
-            // If we're close then we don't need to do anything
-            if (Math.abs(currentSlide - mArmExtendTicks) > 5) {
-                mSlideMotor.setTargetPosition(mArmExtendTicks);
-                mSlideMotor.setPower(mSlideMotorPower);
-                mSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            } else {
-                mSlideMotor.setPower(0);
-            }
+            mSlideMotor.setTargetPosition(mArmExtendTicks);
+            mSlideMotor.setPower(mSlideMotorPower);
+            mSlideMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         }
         // Telemetry for debugging
-        mOp.mTelemetry.addData("Slide Pos", currentSlide);
+        mOp.mTelemetry.addData("Slide Pos", mSlideMotor.getCurrentPosition());
         mOp.mTelemetry.addData("Slide Target", mArmExtendTicks);
     }
 
@@ -426,12 +529,12 @@ public class Arm {
 
     /**
      * Returns whether the lift motor is busy
-     * @return true when the lift motor is busy
+     * @return true when running to position
      */
     public boolean LiftBusy() {
-        // we can't use the busy from the motor because of gravity
+        // we can't use the busy from the motor because we're running to position
         // we have to use the position instead
-        return Math.abs(mLiftMotor.getCurrentPosition() - mLiftPositionTicks) < 15;
+        return MotorBusy(mLiftMotor, 15);
     }
 
     /**
@@ -439,15 +542,9 @@ public class Arm {
      * @return true when running to position
      */
     public boolean ExtendBusy() {
-        return mSlideMotor.isBusy();
-    }
-
-    /**
-     * Returns whether the wrist servo is busy
-     * @return true when the wrist servo has not reached position
-     */
-    public boolean WristBusy() {
-        return mWristServo.getPosition() == mServoPosition;
+        // we can't use the busy from the motor because we're running to position
+        // we have to use the position instead
+        return MotorBusy(mSlideMotor, 8);
     }
 
     /**
@@ -463,17 +560,26 @@ public class Arm {
      * @return true when the lift is at the home position
      */
     private boolean LiftHome() {
+        boolean home;
         if (mLiftHomeSwitch != null) {
-            return mLiftHomeSwitch.isPressed();
+            home = mLiftHomeSwitch.isPressed();
         } else {
-            return mLiftMotor.getCurrentPosition() < 15;
+            home = Math.abs(GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition()) - Pos0Home_Lift) < 5;
         }
+        mOp.mTelemetry.addData("Lift Home", home);
+        return home;
     }
     /**
      * Returns whether the arm extension is home
      * @return true when the extension is at the home position
      */
     private boolean ExtendHome() {
-        return mExtendHomeSwitch.isPressed();
+        boolean home = mExtendHomeSwitch.isPressed();
+        mOp.mTelemetry.addData("Extend Home", home);
+        return home;
+    }
+
+    private boolean MotorBusy(DcMotorEx motor, int hysteresis) {
+        return Math.abs(motor.getCurrentPosition() - motor.getTargetPosition()) > hysteresis;
     }
 }

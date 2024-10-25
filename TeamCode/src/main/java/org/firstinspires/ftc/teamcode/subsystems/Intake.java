@@ -100,6 +100,8 @@ public class Intake {
                     // score it!
                     mState = IntakeStates.Out;
                     mServoPower = Constants.contServoBackward;
+                } else if (!HaveElement()) {
+                    mState = IntakeStates.Idle;
                 } else {
                     mServoPower = Constants.contServoOff;
                 }
