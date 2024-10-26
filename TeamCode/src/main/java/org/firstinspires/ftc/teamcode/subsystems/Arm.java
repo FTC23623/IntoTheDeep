@@ -76,19 +76,19 @@ public class Arm {
     private double mManualWristInput;
     // position to set for the wrist servo
     private double mServoPosition;
-    private final boolean mEnableTune = true;
+    private final boolean mEnableTune = false;
     private ArmActions mAction;
     private ArmActions mLastActiveAction;
     // predetermined lift and extend positions for all arm positions
     private final double Pos0Home_Lift = mLiftZeroPosDeg;
     private final double Pos0Home_Extend = 0.0;
-    private final double Pos0Home_Wrist = 0.53;
+    private final double Pos0Home_Wrist = 0.45;
     private final double Pos1ManualPickup_Lift = -10.0;
     private final double Pos1ManualPickup_Extend = 0.0;
     private final double Pos1ManualPickup_Wrist = 0.75;
     private final double Pos2FloorPickup_Lift = mLiftZeroPosDeg;
     private final double Pos2FloorPickup_Extend = 0.0;
-    private final double Pos2FloorPickup_Wrist = 0.75;
+    private final double Pos2FloorPickup_Wrist = 0.53;
     private final double Pos3SpecimenPickup_Lift = -10.0;
     private final double Pos3SpecimenPickup_Extend = 0.0;
     private final double Pos3SpecimenPickup_Wrist = 0.5;
@@ -104,6 +104,9 @@ public class Arm {
     private final double Pos7SampleUpperBasket_Lift = 99.0;
     private final double Pos7SampleUpperBasket_Extend = 18.5;
     private final double Pos7SampleUpperBasket_Wrist = 0.4;
+    private final double SpecimenHighDropAngle1 = 50.0;
+    private final double SpecimenHighDropAngle2 = 40.0;
+    private final double SpecimenLowDropAngle1 = 0.0;
     // create arrays with the preset values for quick lookup
     double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
             Pos4SpecimenLowerChamber_Lift, Pos5SpecimenUpperChamber_Lift, Pos6SampleLowerBasket_Lift, Pos7SampleUpperBasket_Lift };
@@ -121,6 +124,10 @@ public class Arm {
     private int mArmResetState;
     // timeout to use for resetting the arm
     ElapsedTime mArmResetTimer;
+    // count consecutive loops with the dpad down button pressed
+    private int mDpadDownCounter;
+    // debounced dpad down button
+    boolean mDpadDownDebounced;
 
     /**
      * Initializes the Arm object
@@ -141,7 +148,7 @@ public class Arm {
         mManualMode = false;
         mServoPosition = Pos0Home_Wrist;
         mAction = ArmActions.Idle;
-        mMoveState = ArmMoveStates.ExtendHome;
+        mMoveState = ArmMoveStates.Done;
         mArmPosIdx = 0;
         mManualExtendInput = 0.0;
         mLastActiveAction = ArmActions.Idle;
@@ -150,6 +157,8 @@ public class Arm {
         mManualArmAutoAngleRatio = (mArmPivotHeightInches / mWristPivotHeightInches) - 1;
         mArmResetState = 0;
         mArmResetTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        mDpadDownCounter = 0;
+        mDpadDownDebounced = false;
     }
 
     /**
@@ -323,24 +332,38 @@ public class Arm {
         } else {
             joystickValid = true;
         }
+        boolean dpadDown = mControl.dpad_down;
+        if (dpadDown) {
+            if (mDpadDownCounter < 4) {
+                ++mDpadDownCounter;
+            }
+        } else {
+            mDpadDownCounter = 0;
+        }
+        if (mDpadDownCounter >= 4) {
+            mDpadDownDebounced = true;
+        } else {
+            mDpadDownDebounced = false;
+        }
         // always default manual mode to false
         mManualMode = false;
         // determine which action the user wants to perform
-        if (mControl.cross) {
-            SetArmAction(ArmActions.RunHome);
-        } else if (mControl.square) {
-            SetArmAction(ArmActions.RunPickup);
-        } else if (mControl.circle) {
-            SetArmAction(ArmActions.RunScoreLow);
-        } else if (mControl.triangle) {
-            SetArmAction(ArmActions.RunScoreHigh);
-        } else if (joystickValid) {
-            SetArmAction(ArmActions.RunManual);
-            mManualMode = true;
-        } else {
-            SetArmAction(ArmActions.Idle);
+        if (mMoveState == ArmMoveStates.Done) {
+            if (mControl.cross) {
+                SetArmAction(ArmActions.RunHome);
+            } else if (mControl.square) {
+                SetArmAction(ArmActions.RunPickup);
+            } else if (mControl.circle) {
+                SetArmAction(ArmActions.RunScoreLow);
+            } else if (mControl.triangle) {
+                SetArmAction(ArmActions.RunScoreHigh);
+            } else if (joystickValid) {
+                SetArmAction(ArmActions.RunManual);
+                mManualMode = true;
+            } else {
+                SetArmAction(ArmActions.Idle);
+            }
         }
-        mOp.mTelemetry.addData("Mode", mAction);
         mOp.mTelemetry.addData("Manual", mManualMode);
         mOp.mTelemetry.addData("Manual Extend", mManualExtendInput);
         mOp.mTelemetry.addData("Manual Wrist", mManualWristInput);
@@ -412,6 +435,8 @@ public class Arm {
                     SetArmExtension(Pos0Home_Extend);
                 } else if (!LiftHome()) {
                     SetLiftArmAngle(Pos0Home_Lift);
+                } else {
+                    mMoveState = ArmMoveStates.Done;
                 }
                 break;
             case RunManual:
@@ -438,22 +463,58 @@ public class Arm {
                 switch (mMoveState) {
                     case ExtendHome:
                         if (ExtendHome()) {
+                            SetWristPos(Pos0Home_Wrist);
                             mMoveState = ArmMoveStates.LiftAngle;
                             SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
-                            SetWristPos(mWristPositions[mArmPosIdx]);
                         } else {
                             SetArmExtension(Pos0Home_Extend);
-                            SetWristPos(Pos0Home_Wrist);
                         }
                         break;
                     case LiftAngle:
                         if (!LiftBusy()) {
                             mMoveState = ArmMoveStates.ExtendToPos;
+                            SetWristPos(mWristPositions[mArmPosIdx]);
                             SetArmExtension(mExtendPositions[mArmPosIdx]);
                         }
                         break;
                     case ExtendToPos:
                         if (!ExtendBusy()) {
+                            if (mOp.mTargetElement == ElementTypes.Specimen) {
+                                if (mAction == ArmActions.RunScoreHigh) {
+                                    mMoveState = ArmMoveStates.SpecimenWait1;
+                                } else if (mAction == ArmActions.RunScoreLow) {
+                                    mMoveState = ArmMoveStates.SpecimenWait2;
+                                } else {
+                                    mMoveState = ArmMoveStates.Done;
+                                }
+                            } else {
+                                mMoveState = ArmMoveStates.Done;
+                            }
+                        }
+                        break;
+                    case SpecimenWait1:
+                        if (mDpadDownDebounced) {
+                            SetLiftArmAngle(SpecimenHighDropAngle1);
+                            mMoveState = ArmMoveStates.SpecimenDrop1;
+                        }
+                        break;
+                    case SpecimenDrop1:
+                        if (!LiftBusy()) {
+                            mMoveState = ArmMoveStates.SpecimenWait2;
+                        }
+                        break;
+                    case SpecimenWait2:
+                        if (mDpadDownDebounced) {
+                            if (mAction == ArmActions.RunScoreHigh) {
+                                SetLiftArmAngle(SpecimenHighDropAngle2);
+                            } else {
+                                SetLiftArmAngle(SpecimenLowDropAngle1);
+                            }
+                            mMoveState = ArmMoveStates.SpecimenDrop2;
+                        }
+                        break;
+                    case SpecimenDrop2:
+                        if (!LiftBusy()) {
                             mMoveState = ArmMoveStates.Done;
                         }
                         break;
@@ -467,6 +528,11 @@ public class Arm {
         ProcessArmAngle();
         ProcessArmExtension();
         ProcessWristPosition();
+        mOp.mTelemetry.addData("Lift Home", LiftHome());
+        mOp.mTelemetry.addData("Extend Home", ExtendHome());
+        mOp.mTelemetry.addData("Action", mAction);
+        mOp.mTelemetry.addData("State", mMoveState);
+        mOp.mTelemetry.addData("Index", mArmPosIdx);
     }
 
     /**
@@ -492,8 +558,9 @@ public class Arm {
         double power = pid + ff;
         // Set power to the motor
         mLiftMotor.setPower(power);
+        mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // Telemetry for debugging
-        mOp.mTelemetry.addData("F", f);
+        //mOp.mTelemetry.addData("F", f);
         mOp.mTelemetry.addData("Lift Pos", currentPos);
         mOp.mTelemetry.addData("Lift Target", mLiftPositionTicks);
         mOp.mTelemetry.addData("Lift Power", power);
@@ -534,7 +601,7 @@ public class Arm {
     public boolean LiftBusy() {
         // we can't use the busy from the motor because we're running to position
         // we have to use the position instead
-        return MotorBusy(mLiftMotor, 15);
+        return Math.abs(mLiftMotor.getCurrentPosition() - mLiftPositionTicks) > 30;
     }
 
     /**
@@ -544,7 +611,7 @@ public class Arm {
     public boolean ExtendBusy() {
         // we can't use the busy from the motor because we're running to position
         // we have to use the position instead
-        return MotorBusy(mSlideMotor, 8);
+        return Math.abs(mSlideMotor.getCurrentPosition() - mArmExtendTicks) > 30;
     }
 
     /**
@@ -562,11 +629,10 @@ public class Arm {
     private boolean LiftHome() {
         boolean home;
         if (mLiftHomeSwitch != null) {
-            home = mLiftHomeSwitch.isPressed();
+            home = !mLiftHomeSwitch.isPressed();
         } else {
             home = Math.abs(GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition()) - Pos0Home_Lift) < 5;
         }
-        mOp.mTelemetry.addData("Lift Home", home);
         return home;
     }
     /**
@@ -575,11 +641,6 @@ public class Arm {
      */
     private boolean ExtendHome() {
         boolean home = mExtendHomeSwitch.isPressed();
-        mOp.mTelemetry.addData("Extend Home", home);
         return home;
-    }
-
-    private boolean MotorBusy(DcMotorEx motor, int hysteresis) {
-        return Math.abs(motor.getCurrentPosition() - motor.getTargetPosition()) > hysteresis;
     }
 }

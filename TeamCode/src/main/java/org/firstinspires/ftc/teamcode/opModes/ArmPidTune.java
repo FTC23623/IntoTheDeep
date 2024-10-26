@@ -20,7 +20,7 @@ public class ArmPidTune extends LinearOpMode {
     @Override
     public void runOpMode() {
         final int sleepTime = 20;
-        final ElementTypes elementType = ElementTypes.Sample;
+        final ElementTypes elementType = ElementTypes.Specimen;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         HydraOpMode opMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1, gamepad2, elementType, sleepTime);
         Arm arm = new Arm(opMode);
