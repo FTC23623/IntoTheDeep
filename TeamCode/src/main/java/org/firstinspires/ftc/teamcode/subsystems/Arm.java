@@ -204,7 +204,7 @@ public class Arm {
                 // fall through
             case 3:
                 // run the slides to the home position
-                if (ExtendHome()) {
+                if (ExtendHome(true)) {
                     mArmResetState = 4;
                     // fall through
                 } else {
@@ -431,7 +431,7 @@ public class Arm {
         switch (mAction) {
             case RunHome:
                 SetWristPos(Pos0Home_Wrist);
-                if (!ExtendHome()) {
+                if (!ExtendHome(false)) {
                     SetArmExtension(Pos0Home_Extend);
                 } else if (!LiftHome()) {
                     SetLiftArmAngle(Pos0Home_Lift);
@@ -462,7 +462,7 @@ public class Arm {
             case RunScoreLow:
                 switch (mMoveState) {
                     case ExtendHome:
-                        if (ExtendHome()) {
+                        if (ExtendHome(false)) {
                             SetWristPos(Pos0Home_Wrist);
                             mMoveState = ArmMoveStates.LiftAngle;
                             SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
@@ -529,7 +529,8 @@ public class Arm {
         ProcessArmExtension();
         ProcessWristPosition();
         mOp.mTelemetry.addData("Lift Home", LiftHome());
-        mOp.mTelemetry.addData("Extend Home", ExtendHome());
+        mOp.mTelemetry.addData("Extend Home (sw)", ExtendHome(true));
+        mOp.mTelemetry.addData("Extend Home (pos)", ExtendHome(false));
         mOp.mTelemetry.addData("Action", mAction);
         mOp.mTelemetry.addData("State", mMoveState);
         mOp.mTelemetry.addData("Index", mArmPosIdx);
@@ -639,8 +640,11 @@ public class Arm {
      * Returns whether the arm extension is home
      * @return true when the extension is at the home position
      */
-    private boolean ExtendHome() {
-        boolean home = mExtendHomeSwitch.isPressed();
-        return home;
+    private boolean ExtendHome(boolean useSwitch) {
+        if (useSwitch) {
+            return mExtendHomeSwitch.isPressed();
+        } else {
+            return Math.abs(mSlideMotor.getCurrentPosition()) < 10;
+        }
     }
 }
