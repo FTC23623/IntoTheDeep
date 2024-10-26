@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
 import org.firstinspires.ftc.teamcode.types.ArmMoveStates;
@@ -65,7 +66,7 @@ public class Arm {
     // Whether or not we're currently utilizing manual extension to pick up samples
     private boolean mManualMode;
     // max position value for the wrist servo
-    private final double mWristServoMaxPos = 1;
+    private final double mWristServoMaxPos = 0.75;
     // min position value for the wrist servo
     private final double mWristServoMinPos = 0.3;
     // min time in seconds for full traversing of wrist servo range
@@ -82,13 +83,13 @@ public class Arm {
     // predetermined lift and extend positions for all arm positions
     private final double Pos0Home_Lift = mLiftZeroPosDeg;
     private final double Pos0Home_Extend = 0.0;
-    private final double Pos0Home_Wrist = 0.45;
+    private final double Pos0Home_Wrist = 0.4;
     private final double Pos1ManualPickup_Lift = -10.0;
     private final double Pos1ManualPickup_Extend = 0.0;
     private final double Pos1ManualPickup_Wrist = 0.75;
     private final double Pos2FloorPickup_Lift = mLiftZeroPosDeg;
     private final double Pos2FloorPickup_Extend = 0.0;
-    private final double Pos2FloorPickup_Wrist = 0.53;
+    private final double Pos2FloorPickup_Wrist = 0.45;
     private final double Pos3SpecimenPickup_Lift = -10.0;
     private final double Pos3SpecimenPickup_Extend = 0.0;
     private final double Pos3SpecimenPickup_Wrist = 0.5;
@@ -222,7 +223,7 @@ public class Arm {
                 mArmResetState = 5;
                 // fall through
             case 5:
-                if (LiftHome()) {
+                if (LiftHome(true)) {
                     mArmResetState = 6;
                     // fall through
                 } else {
@@ -346,22 +347,27 @@ public class Arm {
             mDpadDownDebounced = false;
         }
         // always default manual mode to false
-        mManualMode = false;
+       // mManualMode = false;
         // determine which action the user wants to perform
         if (mMoveState == ArmMoveStates.Done) {
             if (mControl.cross) {
                 SetArmAction(ArmActions.RunHome);
+                mManualMode = false;
             } else if (mControl.square) {
                 SetArmAction(ArmActions.RunPickup);
+                mManualMode = false;
             } else if (mControl.circle) {
                 SetArmAction(ArmActions.RunScoreLow);
+                mManualMode = false;
             } else if (mControl.triangle) {
                 SetArmAction(ArmActions.RunScoreHigh);
+                mManualMode = false;
             } else if (joystickValid) {
                 SetArmAction(ArmActions.RunManual);
                 mManualMode = true;
             } else {
                 SetArmAction(ArmActions.Idle);
+                // keep manual mode state so we maintain position
             }
         }
         mOp.mTelemetry.addData("Manual", mManualMode);
@@ -433,7 +439,7 @@ public class Arm {
                 SetWristPos(Pos0Home_Wrist);
                 if (!ExtendHome(false)) {
                     SetArmExtension(Pos0Home_Extend);
-                } else if (!LiftHome()) {
+                } else if (!LiftHome(false)) {
                     SetLiftArmAngle(Pos0Home_Lift);
                 } else {
                     mMoveState = ArmMoveStates.Done;
@@ -453,8 +459,8 @@ public class Arm {
             case Idle:
                 // stop all mechanisms at their current positions
                 if (!TuneMode()) {
-                    SetLiftArmAngle(GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition()));
-                    SetArmExtension(GetExtensionFromTicks(mSlideMotor.getCurrentPosition()));
+                   // SetLiftArmAngle(GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition()));
+                   // SetArmExtension(GetExtensionFromTicks(mSlideMotor.getCurrentPosition()));
                 }
                 break;
             case RunPickup:
@@ -528,12 +534,15 @@ public class Arm {
         ProcessArmAngle();
         ProcessArmExtension();
         ProcessWristPosition();
-        mOp.mTelemetry.addData("Lift Home", LiftHome());
+        mOp.mTelemetry.addData("Lift Home (sw)", LiftHome(true));
+        mOp.mTelemetry.addData("Lift Home (pos)", LiftHome(false));
         mOp.mTelemetry.addData("Extend Home (sw)", ExtendHome(true));
         mOp.mTelemetry.addData("Extend Home (pos)", ExtendHome(false));
         mOp.mTelemetry.addData("Action", mAction);
         mOp.mTelemetry.addData("State", mMoveState);
         mOp.mTelemetry.addData("Index", mArmPosIdx);
+        mOp.mTelemetry.addData("Lift Current", mLiftMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        mOp.mTelemetry.addData("Extend Current", mSlideMotor.getCurrent(CurrentUnit.MILLIAMPS));
     }
 
     /**
@@ -627,14 +636,12 @@ public class Arm {
      * Returns whether the arm lift is at home
      * @return true when the lift is at the home position
      */
-    private boolean LiftHome() {
-        boolean home;
-        if (mLiftHomeSwitch != null) {
-            home = !mLiftHomeSwitch.isPressed();
+    private boolean LiftHome(boolean useSwitch) {
+        if (useSwitch) {
+            return !mLiftHomeSwitch.isPressed();
         } else {
-            home = Math.abs(GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition()) - Pos0Home_Lift) < 5;
+            return Math.abs(GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition()) - Pos0Home_Lift) < 5;
         }
-        return home;
     }
     /**
      * Returns whether the arm extension is home
@@ -644,7 +651,7 @@ public class Arm {
         if (useSwitch) {
             return mExtendHomeSwitch.isPressed();
         } else {
-            return Math.abs(mSlideMotor.getCurrentPosition()) < 10;
+            return GetExtensionFromTicks(mSlideMotor.getCurrentPosition()) < 2.0;
         }
     }
 }

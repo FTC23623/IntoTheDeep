@@ -36,7 +36,7 @@ public class HyDrive extends LinearOpMode {
   public void runOpMode() {
     // Initialization Routines
     final int sleepTime = 20;
-    final ElementTypes elementType = ElementTypes.Sample;
+    final ElementTypes elementType = ElementTypes.Specimen;
     telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1,
             gamepad2, elementType, sleepTime);
