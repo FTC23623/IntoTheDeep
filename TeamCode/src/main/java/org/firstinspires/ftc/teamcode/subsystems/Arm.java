@@ -104,8 +104,8 @@ public class Arm {
     private final double Pos7SampleUpperBasket_Lift = 99.0;
     private final double Pos7SampleUpperBasket_Extend = 18.5;
     private final double Pos7SampleUpperBasket_Wrist = 0.4;
-    private final double SpecimenHighDropAngle1 = 50.0;
-    private final double SpecimenHighDropAngle2 = 40.0;
+    private final double SpecimenHighDropAngle1 = 45.0;
+    private final double SpecimenHighDropAngle2 = 30.0;
     private final double SpecimenLowDropAngle1 = 0.0;
     // create arrays with the preset values for quick lookup
     double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
@@ -398,9 +398,9 @@ public class Arm {
                     break;
                 case RunScoreLow:
                     if (mOp.mTargetElement == ElementTypes.Sample) {
-                        mArmPosIdx = ArmPositions.valueOf("Pos4SpecimenLowerChamber").ordinal();
-                    } else {
                         mArmPosIdx = ArmPositions.valueOf("Pos6SampleLowerBasket").ordinal();
+                    } else {
+                        mArmPosIdx = ArmPositions.valueOf("Pos4SpecimenLowerChamber").ordinal();
                     }
                     if (mLastActiveAction != mAction) {
                         mMoveState = ArmMoveStates.ExtendHome;
@@ -408,9 +408,9 @@ public class Arm {
                     break;
                 case RunScoreHigh:
                     if (mOp.mTargetElement == ElementTypes.Sample) {
-                        mArmPosIdx = ArmPositions.valueOf("Pos5SpecimenUpperChamber").ordinal();
-                    } else {
                         mArmPosIdx = ArmPositions.valueOf("Pos7SampleUpperBasket").ordinal();
+                    } else {
+                        mArmPosIdx = ArmPositions.valueOf("Pos5SpecimenUpperChamber").ordinal();
                     }
                     if (mLastActiveAction != mAction) {
                         mMoveState = ArmMoveStates.ExtendHome;
