@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 
-@TeleOp(name = "ColorDetectionTest")
+//@TeleOp(name = "ColorDetectionTest")
 public class ColorDetectionTest extends LinearOpMode {
 
     RevBlinkinLedDriver blinkinLedDriver;

@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
 @Config
-@TeleOp(name="ArmPidTune")
+//@TeleOp(name="ArmPidTune")
 public class ArmPidTune extends LinearOpMode {
     public static double LiftPosDeg = 0;
     public static double ExtensionPosInches = 0;

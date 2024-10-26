@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Lights;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
 @Config
-@TeleOp(name = "HyDrive-Java")
+@TeleOp(name = "HyDrive")
 public class HyDrive extends LinearOpMode {
   private HydraOpMode mOpMode;
   private Imu mImu;
