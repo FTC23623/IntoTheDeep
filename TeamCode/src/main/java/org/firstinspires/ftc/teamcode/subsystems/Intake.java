@@ -107,12 +107,8 @@ public class Intake {
                 }
                 break;
             case Out:
-                // keep running out until the element is no longer detected
-                // TODO: do we need to use the timer here?
-                if (HaveElement()) {
-                    mServoPower = Constants.contServoBackward;
-                } else {
-                    mServoPower = Constants.contServoOff;
+                mServoPower = Constants.contServoBackward;
+                if (!mRunOut) {
                     mState = IntakeStates.Idle;
                 }
                 break;

@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.objects.OpmodeHeading;
@@ -28,6 +29,7 @@ public class HyDrive extends LinearOpMode {
   // private Lights mLights;
   private Arm mArm;
   private Intake mIntake;
+  private ElapsedTime mLoopSleep;
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.
@@ -35,11 +37,11 @@ public class HyDrive extends LinearOpMode {
   @Override
   public void runOpMode() {
     // Initialization Routines
-    final int sleepTime = 20;
     final ElementTypes elementType = ElementTypes.Specimen;
+    mLoopSleep = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1,
-            gamepad2, elementType, sleepTime);
+            gamepad2, elementType);
     mImu = new Imu_Hub(mOpMode);
     mDrive = new Drive_Manual(mOpMode, mImu);
     // mLens = new Lens(mOpMode);
@@ -55,13 +57,18 @@ public class HyDrive extends LinearOpMode {
     telemetry.addData("Auto Yaw", OpmodeHeading.GetOffset());
     telemetry.update();
     waitForStart();
+    mLoopSleep.reset();
     while (opModeIsActive()) {
+      mOpMode.mLoopTime = mLoopSleep.milliseconds();
       if (mArm.Startup(false)) {
         break;
       }
-      sleep(sleepTime);
+      mLoopSleep.reset();
+      idle();
     }
+    mLoopSleep.reset();
     while (opModeIsActive()) {
+      mOpMode.mLoopTime = mLoopSleep.milliseconds();
       // Pass user input to the systems
       mArm.HandleUserInput();
       mIntake.HandleUserInput();
@@ -72,7 +79,8 @@ public class HyDrive extends LinearOpMode {
       mIntake.Process();
       // Update telemetry once for all processes
       telemetry.update();
-      sleep(sleepTime);
+      mLoopSleep.reset();
+      idle();
     }
   }
 }

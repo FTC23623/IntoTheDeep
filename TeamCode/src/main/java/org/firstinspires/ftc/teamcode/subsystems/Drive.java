@@ -27,9 +27,6 @@ public class Drive {
     protected final double cRampLowPower = 0.3;
     protected final double cRampUpRate = 0.05;
     protected final double cRampDownRate = 0.05;
-    protected final double cDriveBoosted = 1;
-    protected final double cDriveNormal = 0.9;
-    protected final double cDriveSlow = 0.5;
     protected double mRampDownStart;
     protected double mCurrentDrivePower;
     protected double mCurrentDriveMaxPower;

@@ -15,10 +15,10 @@ public class HydraOpMode {
     public com.qualcomm.robotcore.hardware.Gamepad mDriverGamepad;
     public com.qualcomm.robotcore.hardware.Gamepad mOperatorGamepad;
     public ElementTypes mTargetElement;
-    public int mLoopTime;
+    public double mLoopTime;
     public HydraOpMode(Telemetry telemetry, HardwareMap hardwareMap, HydraDriveDatalogger driveLogger,
                        HydraObjDetDatalogger objDetDatalogger, com.qualcomm.robotcore.hardware.Gamepad driverGamepad,
-                       com.qualcomm.robotcore.hardware.Gamepad operatorGamepad, ElementTypes targetElement, int loopTime) {
+                       com.qualcomm.robotcore.hardware.Gamepad operatorGamepad, ElementTypes targetElement) {
         mTelemetry = telemetry;
         mHardwareMap = hardwareMap;
         mDriveLogger = driveLogger;
@@ -26,6 +26,6 @@ public class HydraOpMode {
         mDriverGamepad = driverGamepad;
         mOperatorGamepad = operatorGamepad;
         mTargetElement = targetElement;
-        mLoopTime = loopTime;
+        mLoopTime = 0;
     }
 }

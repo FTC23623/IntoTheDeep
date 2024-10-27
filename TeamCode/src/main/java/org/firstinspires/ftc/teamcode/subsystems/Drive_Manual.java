@@ -67,13 +67,13 @@ public class Drive_Manual extends Drive {
         // Set max drive power based on driver input
         if (mGamepad.left_trigger > Constants.trgBtnThresh) {
             // Drive slower for better control
-            driveMaxPower = cDriveSlow;
+            driveMaxPower = Constants.driveSlow;
         } else if (mGamepad.right_trigger > Constants.trgBtnThresh) {
             // Drive faster for fun
-            driveMaxPower = cDriveBoosted;
+            driveMaxPower = Constants.driveBoosted;
         } else {
             // Normal drive speed
-            driveMaxPower = cDriveNormal;
+            driveMaxPower = Constants.driveNormal;
         }
         // Scale the output power for the division we are doing later
         sum = Math.abs(drive) + Math.abs(strafe) + Math.abs(rotate);

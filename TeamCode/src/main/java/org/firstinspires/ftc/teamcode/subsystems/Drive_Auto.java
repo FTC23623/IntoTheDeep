@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
+import org.firstinspires.ftc.teamcode.types.Constants;
 
 public class Drive_Auto extends Drive {
 
@@ -56,9 +57,9 @@ public class Drive_Auto extends Drive {
         mCurrentDrivePower = cRampLowPower;
         // Ramp up to this power
         if (inRotate != 0) {
-            mCurrentDriveMaxPower = cDriveSlow;
+            mCurrentDriveMaxPower = Constants.driveSlow;
         } else {
-            mCurrentDriveMaxPower = cDriveNormal;
+            mCurrentDriveMaxPower = Constants.driveNormal;
         }
         // Run to position
         SetAllMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
