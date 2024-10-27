@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.Drive_Manual;
 import org.firstinspires.ftc.teamcode.subsystems.Imu;
 import org.firstinspires.ftc.teamcode.subsystems.Imu_Hub;
+import org.firstinspires.ftc.teamcode.subsystems.Imu_navx;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Lens;
 import org.firstinspires.ftc.teamcode.subsystems.Lights;
@@ -42,7 +43,7 @@ public class HyDrive extends LinearOpMode {
     telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1,
             gamepad2, elementType);
-    mImu = new Imu_Hub(mOpMode);
+    mImu = new Imu_navx(mOpMode);
     mDrive = new Drive_Manual(mOpMode, mImu);
     // mLens = new Lens(mOpMode);
     // mLights = new Lights(mOpMode);
