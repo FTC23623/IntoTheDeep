@@ -29,7 +29,7 @@ public class Arm {
     private final com.qualcomm.robotcore.hardware.Gamepad mControl;
     // Lift arm PIDF controller gains
     private final double mLiftP = 0.004;
-    private final double mLiftI = 0.0009;
+    private final double mLiftI = 0.002;
     private final double mLiftD = 0.0001;
     private final double mLiftFRetracted = 0.2;
     private final double mLiftFExtended = 0.48;
@@ -40,7 +40,7 @@ public class Arm {
     // Lift arm desired position in ticks
     private int mLiftPositionTicks;
     // Lift arm motor zero position (home)
-    private final double mLiftZeroPosDeg = -20.0;
+    public static double mLiftZeroPosDeg = -20.0;
     // Lift arm motor max lift position
     private final double mLiftMaxPosDeg = 99.0;
     // Slide motor desired position in ticks
@@ -51,16 +51,6 @@ public class Arm {
     // Max extension of the arm in inches
     // max physically possible 27.95 inches
     private final double mArmExtendMaxInches = 18.5;
-    // Base length of the arm, including the distance we want to keep from the floor (on an angle)
-    // TODO: verify this value
-    private final double mArmBaseLenInches = 14.7;
-    // Height of the bottom of the arm from the floor
-    // TODO: verify this value
-    private final double mArmPivotHeightInches = 5;
-    // Height to keep the intake pivot off the floor in manual
-    private final double mWristPivotHeightInches = 6.0;
-    // Ratio used for arm angle math
-    private final double mManualArmAutoAngleRatio;
     // Power level for slide motor
     private final double mSlideMotorPower = 1.0;
     // Whether or not we're currently utilizing manual extension to pick up samples
@@ -77,46 +67,47 @@ public class Arm {
     private double mManualWristInput;
     // position to set for the wrist servo
     private double mServoPosition;
-    private final boolean mEnableTune = false;
+    public static boolean mEnableTune = false;
     private ArmActions mAction;
     private ArmActions mLastActiveAction;
     // predetermined lift and extend positions for all arm positions
-    private final double Pos0Home_Lift = mLiftZeroPosDeg;
-    private final double Pos0Home_Extend = 0.0;
-    private final double Pos0Home_Wrist = 0.4;
-    private final double Pos1ManualPickup_Lift = -10.0;
-    private final double Pos1ManualPickup_Extend = 0.0;
-    private final double Pos1ManualPickup_Wrist = 0.55;
-    private final double Pos2FloorPickup_Lift = -8;
-    private final double Pos2FloorPickup_Extend = 0.0;
-    private final double Pos2FloorPickup_Wrist = 0.55;
-    private final double Pos3SpecimenPickup_Lift = 12;
-    private final double Pos3SpecimenPickup_Extend = 0.0;
-    private final double Pos3SpecimenPickup_Wrist = 0.45;
-    private final double Pos4SpecimenLowerChamber_Lift = 40.0;
-    private final double Pos4SpecimenLowerChamber_Extend = 0.0;
-    private final double Pos4SpecimenLowerChamber_Wrist = 0.7;
-    private final double Pos5SpecimenUpperChamber_Lift = 55.0;
-    private final double Pos5SpecimenUpperChamber_Extend = 13.0;
-    private final double Pos5SpecimenUpperChamber_Wrist = 0.8;
-    private final double Pos6SampleLowerBasket_Lift = 99.0;
-    private final double Pos6SampleLowerBasket_Extend = 0.0;
-    private final double Pos6SampleLowerBasket_Wrist = 0.3;
-    private final double Pos7SampleUpperBasket_Lift = 99.0;
-    private final double Pos7SampleUpperBasket_Extend = 18.5;
-    private final double Pos7SampleUpperBasket_Wrist = 0.3;
-    private final double Pos8Carry_Lift = 20.0;
-    private final double Pos8Carry_Extend = 0.0;
-    private final double Pos8Carry_Wrist = 0.45;
-    private final double SpecimenLowDropAngle1 = 0.0;
+    public static double Pos0Home_Lift = mLiftZeroPosDeg;
+    public static double Pos0Home_Extend = 0.0;
+    public static double Pos0Home_Wrist = 0.4;
+    public static double Pos1ManualPickup_Lift = -8.0;
+    public static double Pos1ManualPickup_LiftExtended = 2.0;
+    public static double Pos1ManualPickup_Extend = 0.0;
+    public static double Pos1ManualPickup_Wrist = 0.55;
+    public static double Pos2FloorPickup_Lift = 0.0;
+    public static double Pos2FloorPickup_Extend = 0.0;
+    public static double Pos2FloorPickup_Wrist = 0.55;
+    public static double Pos3SpecimenPickup_Lift = 11;
+    public static double Pos3SpecimenPickup_Extend = 0.0;
+    public static double Pos3SpecimenPickup_Wrist = 0.48;
+    public static double Pos4SpecimenLowerChamber_Lift = 40.0;
+    public static double Pos4SpecimenLowerChamber_Extend = 0.0;
+    public static double Pos4SpecimenLowerChamber_Wrist = 0.7;
+    public static double Pos5SpecimenUpperChamber_Lift = 55.0;
+    public static double Pos5SpecimenUpperChamber_Extend = 13.0;
+    public static double Pos5SpecimenUpperChamber_Wrist = 0.8;
+    public static double Pos6SampleLowerBasket_Lift = 99.0;
+    public static double Pos6SampleLowerBasket_Extend = 0.0;
+    public static double Pos6SampleLowerBasket_Wrist = 0.3;
+    public static double Pos7SampleUpperBasket_Lift = 99.0;
+    public static double Pos7SampleUpperBasket_Extend = 18.5;
+    public static double Pos7SampleUpperBasket_Wrist = 0.3;
+    public static double Pos8Carry_Lift = 20.0;
+    public static double Pos8Carry_Extend = 0.0;
+    public static double Pos8Carry_Wrist = 0.45;
+    public static double SpecimenLowDropAngle1 = 0.0;
     // create arrays with the preset values for quick lookup
-    double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
+    public static double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
             Pos4SpecimenLowerChamber_Lift, Pos5SpecimenUpperChamber_Lift, Pos6SampleLowerBasket_Lift, Pos7SampleUpperBasket_Lift,
             Pos8Carry_Lift };
-    double[] mExtendPositions = { Pos0Home_Extend, Pos1ManualPickup_Extend, Pos2FloorPickup_Extend, Pos3SpecimenPickup_Extend,
+    public static double[] mExtendPositions = { Pos0Home_Extend, Pos1ManualPickup_Extend, Pos2FloorPickup_Extend, Pos3SpecimenPickup_Extend,
             Pos4SpecimenLowerChamber_Extend, Pos5SpecimenUpperChamber_Extend, Pos6SampleLowerBasket_Extend, Pos7SampleUpperBasket_Extend,
             Pos8Carry_Extend };
-    double[] mWristPositions = { Pos0Home_Wrist, Pos1ManualPickup_Wrist, Pos2FloorPickup_Wrist, Pos3SpecimenPickup_Wrist,
+    public static double[] mWristPositions = { Pos0Home_Wrist, Pos1ManualPickup_Wrist, Pos2FloorPickup_Wrist, Pos3SpecimenPickup_Wrist,
             Pos4SpecimenLowerChamber_Wrist, Pos5SpecimenUpperChamber_Wrist, Pos6SampleLowerBasket_Wrist, Pos7SampleUpperBasket_Wrist,
             Pos8Carry_Wrist };
     // index into the position arrays for current movement
@@ -163,7 +154,6 @@ public class Arm {
         mLastActiveAction = ArmActions.Idle;
         mWristServoManualIncrement = (mWristServoMaxPos - mWristServoMinPos) / (mWristServoTravelTime / (double)mOp.mLoopTime);
         mManualWristInput = 0.0;
-        mManualArmAutoAngleRatio = (mArmPivotHeightInches / mWristPivotHeightInches) - 1;
         mArmResetState = 0;
         mArmResetTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         mDpadDownCounter = 0;
@@ -459,7 +449,8 @@ public class Arm {
      * Calls processes for each system in this subsystem
      * Handles automatic set angles based on other inputs
      */
-    public void Process() {
+    public boolean Process() {
+        boolean requestRunIntake = false;
         switch (mAction) {
             case RunHome:
                 SetWristPos(Pos0Home_Wrist);
@@ -477,11 +468,12 @@ public class Arm {
                 // opposite is the parallel side of the vertical we are mounted to (extended to the floor)
                 // use sine to get the set angle
                 // -1 gets us the negative angle we're looking for
-                double e = mArmBaseLenInches + GetExtensionFromTicks(mSlideMotor.getCurrentPosition());
+                //double e = mArmBaseLenInches + GetExtensionFromTicks(mSlideMotor.getCurrentPosition());
                // SetLiftArmAngle(Math.asin(-1 * mArmPivotHeightInches / (e)));
                 // another option that should keep a static height off of the floor
-                SetLiftArmAngle(Math.asin(-1 * mArmPivotHeightInches / (e + e / mManualArmAutoAngleRatio)));
-                SetWristPos(Pos1ManualPickup_Wrist);
+                //SetLiftArmAngle(Math.asin(-1 * mArmPivotHeightInches / (e + e / mManualArmAutoAngleRatio)));
+                //SetLiftArmAngle(Pos1ManualPickup_Lift);
+                //SetWristPos(Pos1ManualPickup_Wrist);
                 break;
             case Idle:
                 // stop all mechanisms at their current positions
@@ -528,6 +520,7 @@ public class Arm {
                         if (mDpadDownDebounced) {
                             if (mAction == ArmActions.RunScoreHigh) {
                                 SetArmExtension(0.0);
+                                requestRunIntake = true;
                                 mMoveState = ArmMoveStates.SpecimenDropHigh;
                             } else {
                                 SetLiftArmAngle(SpecimenLowDropAngle1);
@@ -564,6 +557,7 @@ public class Arm {
         mOp.mTelemetry.addData("Index", mArmPosIdx);
         mOp.mTelemetry.addData("Lift Current", mLiftMotor.getCurrent(CurrentUnit.MILLIAMPS));
         mOp.mTelemetry.addData("Extend Current", mSlideMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        return requestRunIntake;
     }
 
     /**
@@ -579,13 +573,17 @@ public class Arm {
             mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             power = 0;
         } else {
+            // Get percentage of arm extension
+            double extensionPct = GetExtensionFromTicks(mSlideMotor.getCurrentPosition()) / mArmExtendMaxInches;
+            if (mManualMode) {
+                double angle = Pos1ManualPickup_Lift + (Pos1ManualPickup_LiftExtended - Pos1ManualPickup_Lift) * extensionPct;
+                SetLiftArmAngle(angle);
+            }
             mPID.setPID(mLiftP, mLiftI, mLiftD);
             // Calculate the pid to get from current position to desired
             double pid = mPID.calculate(currentPos, mLiftPositionTicks);
             // Factor in gravity
             // The force from gravity is higher when the arm is extended
-            // Get percentage of arm extension
-            double extensionPct = GetExtensionFromTicks(mSlideMotor.getCurrentPosition()) / mArmExtendMaxInches;
             // Calculate f linearly based on how far the arm is extended
             double f = mLiftFRetracted + extensionPct * (mLiftFExtended - mLiftFRetracted);
             // Cos will scale the force of gravity based on the current arm angle
@@ -607,8 +605,19 @@ public class Arm {
      * Updates the extension if it has changed
      */
     private void ProcessArmExtension() {
+        int current = mSlideMotor.getCurrentPosition();
         if (mManualMode) {
-            mSlideMotor.setPower(mManualExtendInput);
+            double power = 0;
+            if (mManualExtendInput > 0) {
+                if (GetExtensionFromTicks(current) < mArmExtendMaxInches) {
+                    power = mManualExtendInput;
+                }
+            } else {
+                if (GetExtensionFromTicks(current) > 0) {
+                    power = mManualExtendInput;
+                }
+            }
+            mSlideMotor.setPower(power);
             mSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         } else if (mExtendHomeSwitch.isPressed() && (mArmExtendTicks == 0)) {
             mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -620,7 +629,7 @@ public class Arm {
             mSlideMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         }
         // Telemetry for debugging
-        mOp.mTelemetry.addData("Slide Pos", mSlideMotor.getCurrentPosition());
+        mOp.mTelemetry.addData("Slide Pos", current);
         mOp.mTelemetry.addData("Slide Target", mArmExtendTicks);
     }
 
@@ -628,8 +637,9 @@ public class Arm {
      * Sets the wrist position
      */
     private void ProcessWristPosition() {
-        if (false) {
-            SetWristPos(mServoPosition + mWristServoManualIncrement * mManualWristInput);
+        if (mManualMode) {
+            SetWristPos(Pos1ManualPickup_Wrist);
+            //SetWristPos(mServoPosition + mWristServoManualIncrement * mManualWristInput);
         }
         mWristServo.setPosition(mServoPosition);
     }

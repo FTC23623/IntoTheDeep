@@ -89,14 +89,16 @@ public class Intake {
                 break;
             case InDetected:
                 // keep running for a bit to make sure the element is fully grasped
-                if (mTimeSinceHaveElement.milliseconds() > 200) {
+                if (mTimeSinceHaveElement.milliseconds() > 500) {
                     // time has elapsed, go to hold
                     mState = IntakeStates.Hold;
                 }
                 break;
             case Hold:
                 // keep the servo off until it's time to release it
-                if (mRunOut) {
+                if (mRunIn) {
+                    mState = IntakeStates.In;
+                } else if (mRunOut) {
                     // score it!
                     mState = IntakeStates.Out;
                     mServoPower = Constants.contServoBackward;

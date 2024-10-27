@@ -31,6 +31,7 @@ public class HyDrive extends LinearOpMode {
   private Arm mArm;
   private Intake mIntake;
   private ElapsedTime mLoopSleep;
+  private int optionsPressedCount = 0;
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.
@@ -38,11 +39,10 @@ public class HyDrive extends LinearOpMode {
   @Override
   public void runOpMode() {
     // Initialization Routines
-    final ElementTypes elementType = ElementTypes.Specimen;
     mLoopSleep = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1,
-            gamepad2, elementType);
+            gamepad2, ElementTypes.Sample);
     mImu = new Imu_navx(mOpMode);
     mDrive = new Drive_Manual(mOpMode, mImu);
     // mLens = new Lens(mOpMode);
@@ -76,7 +76,9 @@ public class HyDrive extends LinearOpMode {
       // System processes
       mDrive.Process();
       // mLights.SetColor(mLens.GetDetectedSample());
-      mArm.Process();
+      if (mArm.Process()) {
+        mIntake.RunIn();
+      }
       mIntake.Process();
       // Update telemetry once for all processes
       telemetry.update();
@@ -84,4 +86,25 @@ public class HyDrive extends LinearOpMode {
       idle();
     }
   }
+
+  private void HandleElementSwitch() {
+    if (gamepad1.options) {
+      if (optionsPressedCount < 10) {
+        ++optionsPressedCount;
+      }
+    } else {
+      optionsPressedCount = 0;
+    }
+    if (optionsPressedCount == 9) {
+      switch (mOpMode.mTargetElement) {
+        case Sample:
+          mOpMode.mTargetElement = ElementTypes.Specimen;
+          break;
+        case Specimen:
+          mOpMode.mTargetElement = ElementTypes.Sample;
+          break;
+      }
+    }
+  }
+
 }
