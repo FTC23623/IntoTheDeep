@@ -16,21 +16,28 @@ public final class SplineTest extends LinearOpMode {
             MecanumDrive drive = new MecanumDrive(hardwareMap, beginPose);
 
             waitForStart();
+            if (true) {
+                Actions.runBlocking(
+                        drive.actionBuilder(beginPose)
+                                .splineToLinearHeading(new Pose2d(54, 54, HeadingRad(-135)), HeadingRad(0))
+                                .splineToLinearHeading(new Pose2d(59, 46, HeadingRad(-90)), HeadingRad(-90))
+                                .splineToLinearHeading(new Pose2d(54, 54, HeadingRad(-135)), HeadingRad(0))
+                                .splineToLinearHeading(new Pose2d(49, 46, HeadingRad(-90)), HeadingRad(-90))
+                                .splineToLinearHeading(new Pose2d(54, 54, HeadingRad(-135)), HeadingRad(0))
+                                .splineToLinearHeading(new Pose2d(51, 26, HeadingRad(0)), HeadingRad(90))
+                                .splineToLinearHeading(new Pose2d(54, 54, HeadingRad(-135)), HeadingRad(0))
+                                // .lineTo(new Pose2d(56,15, HeadingRad(180)), HeadingRad(180))
+                                // .splineToLinearHeading(new Pose2d(38,10,HeadingRad(180)),HeadingRad(-90))
+                                .splineToLinearHeading(new Pose2d(46, 54, HeadingRad(-90)), HeadingRad(0))
+                                .splineToLinearHeading(new Pose2d(25, 10, HeadingRad(180)), HeadingRad(180))
+                                .build());
+            } else {
+                Actions.runBlocking(
+                        drive.actionBuilder(beginPose)
+                                .lineToY(-17)
+                                .build());
 
-            Actions.runBlocking(
-                drive.actionBuilder(beginPose)
-                        .splineToLinearHeading(new Pose2d(54,54, HeadingRad(-135)),HeadingRad(0))
-                        .splineToLinearHeading(new Pose2d(59,46,HeadingRad(-90)),HeadingRad(-90))
-                        .splineToLinearHeading(new Pose2d(54,54, HeadingRad(-135)),HeadingRad(0))
-                        .splineToLinearHeading(new Pose2d(49,46, HeadingRad(-90)),HeadingRad(-90))
-                        .splineToLinearHeading(new Pose2d(54,54, HeadingRad(-135)),HeadingRad(0))
-                        .splineToLinearHeading(new Pose2d(51,26,HeadingRad(0)),HeadingRad(90))
-                        .splineToLinearHeading(new Pose2d(54,54, HeadingRad(-135)),HeadingRad(0))
-                        // .lineTo(new Pose2d(56,15, HeadingRad(180)), HeadingRad(180))
-                        // .splineToLinearHeading(new Pose2d(38,10,HeadingRad(180)),HeadingRad(-90))
-                        .splineToLinearHeading(new Pose2d(46,54, HeadingRad(-90)), HeadingRad(0))
-                        .splineToLinearHeading(new Pose2d(25,10,HeadingRad(180)),HeadingRad(180))
-                        .build());
+            }
         } else if (TuningOpModes.DRIVE_CLASS.equals(TankDrive.class)) {
             TankDrive drive = new TankDrive(hardwareMap, beginPose);
 
