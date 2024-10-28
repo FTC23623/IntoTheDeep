@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -692,6 +696,48 @@ public class Arm {
             return mExtendHomeSwitch.isPressed();
         } else {
             return GetExtensionFromTicks(mSlideMotor.getCurrentPosition()) <= 2.0;
+        }
+    }
+
+    /*
+     * ROAD RUNNER API
+     */
+    /**
+     * Get a new action object for Road Runner to run
+     * @param action: the action to run in this instance
+     * @return the action object for RR to use
+     */
+    public Action GetAction(ArmActions action) {
+        return new RunAction(action);
+    }
+
+    /**
+     * Runs the supplied action until completion
+     */
+    public class RunAction implements Action {
+        // action this instance will run
+        private final ArmActions mAction;
+        // run has been called once
+        private boolean started = false;
+
+        // construct on the supplied action
+        public RunAction(ArmActions action) {
+            mAction = action;
+        }
+
+        /**
+         * Runs the desired action until completion
+         * @param packet: ??
+         * @return true when the action is completed
+         */
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!started) {
+                SetArmAction(mAction);
+                started = true;
+            }
+            Process();
+            return mMoveState == ArmMoveStates.Done;
         }
     }
 }
