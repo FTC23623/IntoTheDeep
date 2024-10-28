@@ -1,82 +1,15 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 
-public class HydraDrive {
-    protected boolean mGyroAssist = true;
-    protected final DcMotorEx mMotDrFrLt;
-    protected final DcMotorEx mMotDrFrRt;
-    protected final DcMotorEx mMotDrBkLt;
-    protected final DcMotorEx mMotDrBkRt;
-    protected final HydraImu mImu;
-    protected final String cfgFrLt = "MotDrFrLt";
-    protected final String cfgFrRt = "MotDrFrRt";
-    protected final String cfgBkLt = "MotDrBkLt";
-    protected final String cfgBkRt = "MotDrBkRt";
-    protected final double cWheelDiameter = 3.78;
-    protected final double cWheelCircumference = cWheelDiameter * Math.PI;
-    protected final double cCountsPerWheelRevolution = 537.6;
-    protected final double cCountsPerInch = cCountsPerWheelRevolution / cWheelCircumference;
-    protected final HydraOpMode mOp;
-    protected final double cRampDownStartPercentage = 0.9;
-    protected final double cRampLowPower = 0.3;
-    protected final double cRampUpRate = 0.05;
-    protected final double cRampDownRate = 0.05;
-    protected final double cDriveBoosted = 1;
-    protected final double cDriveNormal = 0.9;
-    protected final double cDriveSlow = 0.5;
-    protected double mRampDownStart;
-    protected double mCurrentDrivePower;
-    protected double mCurrentDriveMaxPower;
-    protected double mCurrentDriveHeading;
-    protected final boolean cResetEncodersBetweenDrives = true;
-    public HydraDrive(HydraOpMode op) {
-        mOp = op;
-        // grab the motors out of the hardware map
-        mMotDrFrLt = (DcMotorEx)mOp.mHardwareMap.get(DcMotor.class, cfgFrLt);
-        mMotDrFrRt = (DcMotorEx)mOp.mHardwareMap.get(DcMotor.class, cfgFrRt);
-        mMotDrBkLt = (DcMotorEx)mOp.mHardwareMap.get(DcMotor.class, cfgBkLt);
-        mMotDrBkRt = (DcMotorEx)mOp.mHardwareMap.get(DcMotor.class, cfgBkRt);
-        if (false) {
-            // todo try setting new PID values
-            PIDFCoefficients pid = mMotDrFrLt.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-            mOp.mTelemetry.addData("FrLft PID", pid.toString());
-            pid = mMotDrFrRt.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-            mOp.mTelemetry.addData("FrRt PID", pid.toString());
-            pid = mMotDrBkLt.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-            mOp.mTelemetry.addData("BkLft PID", pid.toString());
-            pid = mMotDrBkRt.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-            mOp.mTelemetry.addData("BkRt PID", pid.toString());
-            PIDFCoefficients newPIDF = new PIDFCoefficients(pid.p, pid.i, pid.d, pid.f, MotorControlAlgorithm.PIDF);
-            mMotDrBkLt.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, newPIDF);
-            mMotDrBkRt.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, newPIDF);
-            mMotDrFrLt.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, newPIDF);
-            mMotDrFrRt.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, newPIDF);
-        }
-        // increase the tolerance in the PID
-        mMotDrBkLt.setTargetPositionTolerance(10);
-        mMotDrBkRt.setTargetPositionTolerance(10);
-        mMotDrFrLt.setTargetPositionTolerance(10);
-        mMotDrFrRt.setTargetPositionTolerance(10);
-        // set the motor directions
-        mMotDrFrLt.setDirection(DcMotor.Direction.REVERSE);
-        mMotDrBkLt.setDirection(DcMotor.Direction.REVERSE);
-        mMotDrFrRt.setDirection(DcMotor.Direction.FORWARD);
-        mMotDrBkRt.setDirection(DcMotor.Direction.FORWARD);
-        // reset the encoders
-        SetAllMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        // we want to brake when we aren't applying power
-        mMotDrFrLt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        mMotDrBkLt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        mMotDrFrRt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        mMotDrBkRt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        // create an IMU
-        mImu = new HydraImu_navx(mOp);
+import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
+import org.firstinspires.ftc.teamcode.types.Constants;
+
+public class Drive_Auto extends Drive {
+
+    public Drive_Auto(HydraOpMode op, Imu imu) {
+        super(op, imu);
     }
 
     /**
@@ -124,9 +57,9 @@ public class HydraDrive {
         mCurrentDrivePower = cRampLowPower;
         // Ramp up to this power
         if (inRotate != 0) {
-            mCurrentDriveMaxPower = cDriveSlow;
+            mCurrentDriveMaxPower = Constants.driveSlow;
         } else {
-            mCurrentDriveMaxPower = cDriveNormal;
+            mCurrentDriveMaxPower = Constants.driveNormal;
         }
         // Run to position
         SetAllMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -233,50 +166,5 @@ public class HydraDrive {
         mOp.mTelemetry.addData("Driving", ret);
         mOp.mTelemetry.addData("Heading", mCurrentDriveHeading);
         return ret;
-    }
-
-    protected boolean ImuCalibrating() {
-        return mImu.Calibrating();
-    }
-
-    protected boolean ImuConnected() {
-        return mImu.Connected();
-    }
-
-    public boolean ImuReady() {
-        return ImuConnected() && !ImuCalibrating();
-    }
-
-    public void CloseImu() {
-        mImu.Close();
-    }
-
-    public double GetYaw() {
-        if (ImuReady()) {
-            return mImu.GetYaw();
-        }
-        return 0;
-    }
-
-    /**
-     * Sets the power to all motors
-     * @param value the power to set to the motors
-     */
-    private void SetAllMotorPower(double value) {
-        mMotDrBkLt.setPower(value);
-        mMotDrBkRt.setPower(value);
-        mMotDrFrLt.setPower(value);
-        mMotDrFrRt.setPower(value);
-    }
-
-    /**
-     * Sets the run mode for all motors
-     * @param value the run mode to set
-     */
-    private void SetAllMotorMode(DcMotor.RunMode value) {
-        mMotDrBkLt.setMode(value);
-        mMotDrBkRt.setMode(value);
-        mMotDrFrLt.setMode(value);
-        mMotDrFrRt.setMode(value);
     }
 }

@@ -6,11 +6,11 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 
-public class HydraImu_Hub implements HydraImu {
+public class Imu_Hub implements Imu {
     protected IMU imu;
     protected double mOffset;
 
-    public HydraImu_Hub(HydraOpMode opMode) {
+    public Imu_Hub(HydraOpMode opMode) {
         // Initialization Routines
         // Initialize the IMU with non-default settings. To use this block,
         // plug one of the "new IMU.Parameters" blocks into the parameters socket.
