@@ -373,8 +373,10 @@ public class Arm {
                 SetArmAction(ArmActions.RunHome);
                 mManualMode = false;
             } else if (mManualMode || joystickValid) {
-                SetArmAction(ArmActions.RunManual);
-                mManualMode = true;
+                if (mLastActiveAction != ArmActions.RunScoreHigh && mLastActiveAction != ArmActions.RunScoreLow) {
+                    SetArmAction(ArmActions.RunManual);
+                    mManualMode = true;
+                }
             } else {
                 // keep manual mode state so we maintain position
                 SetArmAction(ArmActions.Idle);
