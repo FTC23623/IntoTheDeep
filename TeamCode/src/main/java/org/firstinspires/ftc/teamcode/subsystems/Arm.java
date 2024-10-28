@@ -100,6 +100,7 @@ public class Arm {
     public static double Pos8Carry_Extend = 0.0;
     public static double Pos8Carry_Wrist = 0.45;
     public static double SpecimenLowDropAngle1 = 0.0;
+    private ElapsedTime mHighSpecimenWristWait;
     // create arrays with the preset values for quick lookup
     public static double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
             Pos4SpecimenLowerChamber_Lift, Pos5SpecimenUpperChamber_Lift, Pos6SampleLowerBasket_Lift, Pos7SampleUpperBasket_Lift,
@@ -160,6 +161,7 @@ public class Arm {
         mDpadDownDebounced = false;
         mDpadLeftCounter = 0;
         mDpadLeftDebounced = false;
+        mHighSpecimenWristWait = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     }
 
     /**
@@ -506,14 +508,10 @@ public class Arm {
                         break;
                     case ExtendToPos:
                         if (!ExtendBusy()) {
-                            SetWristPos(mWristPositions[mArmPosIdx]);
-                            if (mOp.mTargetElement == ElementTypes.Specimen) {
-                                if (mAction == ArmActions.RunScoreHigh || mAction == ArmActions.RunScoreLow) {
-                                    mMoveState = ArmMoveStates.SpecimenWait1;
-                                } else {
-                                    mMoveState = ArmMoveStates.Done;
-                                }
+                            if (mOp.mTargetElement == ElementTypes.Specimen && (mAction == ArmActions.RunScoreHigh || mAction == ArmActions.RunScoreLow)) {
+                                mMoveState = ArmMoveStates.SpecimenWait1;
                             } else {
+                                SetWristPos(mWristPositions[mArmPosIdx]);
                                 mMoveState = ArmMoveStates.Done;
                             }
                         }
@@ -521,13 +519,20 @@ public class Arm {
                     case SpecimenWait1:
                         if (mDpadDownDebounced) {
                             if (mAction == ArmActions.RunScoreHigh) {
-                                SetArmExtension(0.0);
-                                requestRunIntake = true;
-                                mMoveState = ArmMoveStates.SpecimenDropHigh;
+                                SetWristPos(mWristPositions[mArmPosIdx]);
+                                mMoveState = ArmMoveStates.SpecimenWait2;
+                                mHighSpecimenWristWait.reset();
                             } else {
                                 SetLiftArmAngle(SpecimenLowDropAngle1);
                                 mMoveState = ArmMoveStates.SpecimenDropLow;
                             }
+                        }
+                        break;
+                    case SpecimenWait2:
+                        if (mHighSpecimenWristWait.milliseconds() >= 300) {
+                            SetArmExtension(0.0);
+                            requestRunIntake = true;
+                            mMoveState = ArmMoveStates.SpecimenDropHigh;
                         }
                         break;
                     case SpecimenDropHigh:
