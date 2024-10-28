@@ -30,7 +30,6 @@ public class HydrAuto_Net extends HydrAuto {
 
         Action takeS1ToBasket = mDrive.actionBuilder(mBeginPose)
                 .splineToLinearHeading(basket, HeadingRad(0))
-                .endTrajectory()
                 .build();
 
         Action driveToS2 = mDrive.actionBuilder(basket)
