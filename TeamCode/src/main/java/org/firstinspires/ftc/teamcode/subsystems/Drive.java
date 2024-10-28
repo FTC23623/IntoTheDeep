@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
@@ -61,7 +62,7 @@ public class Drive {
         mMotDrFrLt.setTargetPositionTolerance(10);
         mMotDrFrRt.setTargetPositionTolerance(10);
         // set the motor directions
-        mMotDrFrLt.setDirection(DcMotor.Direction.REVERSE);
+        mMotDrFrLt.setDirection(DcMotor.Direction.FORWARD);
         mMotDrBkLt.setDirection(DcMotor.Direction.FORWARD);
         mMotDrFrRt.setDirection(DcMotor.Direction.REVERSE);
         mMotDrBkRt.setDirection(DcMotor.Direction.REVERSE);
