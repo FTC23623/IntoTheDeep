@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -21,6 +22,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Lights;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
 @Config
+@Disabled
 @TeleOp(name = "HyDrive")
 public class HyDrive extends LinearOpMode {
   private HydraOpMode mOpMode;
@@ -32,6 +34,7 @@ public class HyDrive extends LinearOpMode {
   private Intake mIntake;
   private ElapsedTime mLoopSleep;
   private int optionsPressedCount = 0;
+  protected ElementTypes mStartElementType = ElementTypes.Sample;
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.
@@ -42,7 +45,7 @@ public class HyDrive extends LinearOpMode {
     mLoopSleep = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1,
-            gamepad2, ElementTypes.Sample);
+            gamepad2, mStartElementType);
     mImu = new Imu_navx(mOpMode);
     mDrive = new Drive_Manual(mOpMode, mImu);
     // mLens = new Lens(mOpMode);
