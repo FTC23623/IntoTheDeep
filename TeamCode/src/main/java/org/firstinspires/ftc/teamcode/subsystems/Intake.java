@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -8,7 +12,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
+import org.firstinspires.ftc.teamcode.types.ArmActions;
+import org.firstinspires.ftc.teamcode.types.ArmMoveStates;
 import org.firstinspires.ftc.teamcode.types.Constants;
+import org.firstinspires.ftc.teamcode.types.IntakeActions;
 import org.firstinspires.ftc.teamcode.types.IntakeStates;
 
 @Config
@@ -56,6 +63,12 @@ public class Intake {
     public void RunOut() {
         mRunIn = false;
         mRunOut = true;
+    }
+
+    public void Stop() {
+        mRunIn = false;
+        mRunOut = false;
+        mState = IntakeStates.Idle;
     }
 
     /**
@@ -134,5 +147,63 @@ public class Intake {
     public boolean HaveElement() {
         double distance = mSensor.getDistance(DistanceUnit.INCH);
         return distance < mElementDetectionDistance;
+    }
+
+    /*
+     * ROAD RUNNER API
+     */
+
+    /**
+     * Runs the intake until an element has been picked up
+     */
+    /**
+     * Get a new action object for Road Runner to run
+     * @param action: the action to run in this instance
+     * @return the action object for RR to use
+     */
+    public Action GetAction(IntakeActions action) {
+        return new RunAction(action);
+    }
+    /**
+     * Runs the supplied action until completion
+     */
+    public class RunAction implements Action {
+        // action this instance will run
+        private boolean started = false;
+        // run has been called once
+        private final IntakeActions mAction;
+
+        // construct on the supplied action
+        public RunAction(IntakeActions action) {
+            mAction = action;
+        }
+
+        /**
+         * Runs the desired action until completion
+         * @param packet: ??
+         * @return true while the action is running
+         */
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            switch (mAction) {
+                case IntakeElement:
+                    if (!started) {
+                        RunIn();
+                        started = true;
+                    }
+                    return !HaveElement();
+                case InStart:
+                    RunIn();
+                    return false;
+                case OutContinuous:
+                    RunOut();
+                    return false;
+                case Stop:
+                    Stop();
+                    return false;
+                default:
+                    return false;
+            }
+        }
     }
 }
