@@ -70,12 +70,12 @@ public final class MecanumDrive {
         // based on 16.3125 in measured between the wheels
         // public double trackWidthTicks = 5494.634940;
         // value from automated opmode
-        public double trackWidthTicks = 5037.439448434473;//5374.006905065495;
+        public double trackWidthTicks = 5008.21041380578;//5037.439448434473;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.85;//0.749610904563784;
-        public double kV = 0.00054;//0.00058;//0.0005672513487624176;
-        public double kA = 0.0001;//0.000064;
+        public double kS = 0.25;
+        public double kV = 0.00059;
+        public double kA = 0.0001;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 45;
@@ -87,9 +87,9 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 3.5;//7;
-        public double lateralGain = 0.45;//1;
-        public double headingGain = 1;//6;
+        public double axialGain = 0;//3.5;
+        public double lateralGain = 0;//0.45;
+        public double headingGain = 0;//1;
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
