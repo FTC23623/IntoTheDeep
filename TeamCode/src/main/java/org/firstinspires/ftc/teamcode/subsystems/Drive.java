@@ -61,7 +61,7 @@ public class Drive {
         mMotDrFrLt.setTargetPositionTolerance(10);
         mMotDrFrRt.setTargetPositionTolerance(10);
         // set the motor directions
-        mMotDrFrLt.setDirection(DcMotor.Direction.REVERSE);
+        mMotDrFrLt.setDirection(DcMotor.Direction.FORWARD);
         mMotDrBkLt.setDirection(DcMotor.Direction.FORWARD);
         mMotDrFrRt.setDirection(DcMotor.Direction.REVERSE);
         mMotDrBkRt.setDirection(DcMotor.Direction.REVERSE);
