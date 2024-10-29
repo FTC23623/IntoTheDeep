@@ -31,8 +31,8 @@ public class Arm {
     private final double mLiftP = 0.004;
     private final double mLiftI = 0.002;
     private final double mLiftD = 0.0001;
-    private final double mLiftFRetracted = 0.2;
-    private final double mLiftFExtended = 0.48;
+    private final double mLiftFRetracted = 0.3;
+    private final double mLiftFExtended = 0.7;
     // Lift arm motor ticks per degree
     // 1993.6 PPR at the motor
     // 2x1 gear
@@ -509,6 +509,7 @@ public class Arm {
                     case ExtendToPos:
                         if (!ExtendBusy()) {
                             if (mOp.mTargetElement == ElementTypes.Specimen && (mAction == ArmActions.RunScoreHigh || mAction == ArmActions.RunScoreLow)) {
+                                SetWristPos(0.67);
                                 mMoveState = ArmMoveStates.SpecimenWait1;
                             } else {
                                 SetWristPos(mWristPositions[mArmPosIdx]);
@@ -520,7 +521,7 @@ public class Arm {
                         if (mDpadDownDebounced) {
                             if (mAction == ArmActions.RunScoreHigh) {
                                 SetWristPos(mWristPositions[mArmPosIdx]);
-                                mMoveState = ArmMoveStates.SpecimenWait2;
+                                mMoveState = ArmMoveStates.SpecimenWaitOff;
                                 mHighSpecimenWristWait.reset();
                             } else {
                                 SetLiftArmAngle(SpecimenLowDropAngle1);
@@ -528,8 +529,13 @@ public class Arm {
                             }
                         }
                         break;
+                    case SpecimenWaitOff:
+                        if (!mDpadDownDebounced){
+                            mMoveState = ArmMoveStates.SpecimenWait2;
+                        }
+                        break;
                     case SpecimenWait2:
-                        if (mHighSpecimenWristWait.milliseconds() >= 300) {
+                        if (mDpadDownDebounced) {
                             SetArmExtension(0.0);
                             requestRunIntake = true;
                             mMoveState = ArmMoveStates.SpecimenDropHigh;

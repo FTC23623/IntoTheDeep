@@ -5,6 +5,7 @@ public enum ArmMoveStates {
     LiftAngle,
     ExtendToPos,
     SpecimenWait1,
+    SpecimenWaitOff,
     SpecimenWait2,
     SpecimenDropHigh,
     SpecimenDropLow,
