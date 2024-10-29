@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.objects.Debouncer;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
 import org.firstinspires.ftc.teamcode.types.ArmMoveStates;
@@ -125,14 +126,14 @@ public class Arm {
     private int mArmResetState;
     // timeout to use for resetting the arm
     ElapsedTime mArmResetTimer;
-    // count consecutive loops with the dpad down button pressed
-    private int mDpadDownCounter;
-    // debounced dpad down button
-    boolean mDpadDownDebounced;
-    // count consecutive loops with the dpad left button pressed
-    private int mDpadLeftCounter;
-    // debounced dpad left button
-    boolean mDpadLeftDebounced;
+    // button debouncers
+    private final int mDebounce = 3;
+    Debouncer mDpadDown;
+    Debouncer mDpadLeft;
+    Debouncer mCross;
+    Debouncer mSquare;
+    Debouncer mCircle;
+    Debouncer mTriangle;
 
     /**
      * Initializes the Arm object
@@ -161,11 +162,13 @@ public class Arm {
         mManualWristInput = 0.0;
         mArmResetState = 0;
         mArmResetTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        mDpadDownCounter = 0;
-        mDpadDownDebounced = false;
-        mDpadLeftCounter = 0;
-        mDpadLeftDebounced = false;
         mHighSpecimenWristWait = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        mDpadDown = new Debouncer(mDebounce);
+        mDpadLeft = new Debouncer(9);
+        mCross = new Debouncer(mDebounce);
+        mSquare = new Debouncer(mDebounce);
+        mTriangle = new Debouncer(mDebounce);
+        mCircle = new Debouncer(mDebounce);
     }
 
     /**
@@ -341,41 +344,30 @@ public class Arm {
         } else {
             joystickValid = true;
         }
-        boolean dpadDown = mControl.dpad_down;
-        if (dpadDown) {
-            if (mDpadDownCounter < 4) {
-                ++mDpadDownCounter;
-            }
-        } else {
-            mDpadDownCounter = 0;
-        }
-        mDpadDownDebounced = mDpadDownCounter >= 3;
-        boolean dpadLeft = mControl.dpad_left;
-        if (dpadLeft) {
-            if (mDpadLeftCounter < 9) {
-                ++mDpadLeftCounter;
-            }
-        } else {
-            mDpadLeftCounter = 0;
-        }
-        mDpadLeftDebounced = mDpadLeftCounter >= 9;
-        // always default manual mode to false
-       // mManualMode = false;
+        // run buttons through debouncers
+        mDpadDown.In(mControl.dpad_down);
+        mDpadLeft.In(mControl.dpad_left);
+        mCross.In(mControl.cross);
         // determine which action the user wants to perform
         if (mMoveState == ArmMoveStates.Done) {
-            if (mControl.cross) {
+            if (mCross.Out()) {
+                mCross.Used();
                 SetArmAction(ArmActions.RunCarry);
                 mManualMode = false;
-            } else if (mControl.square) {
+            } else if (mSquare.Out()) {
+                mSquare.Used();
                 SetArmAction(ArmActions.RunPickup);
                 mManualMode = false;
-            } else if (mControl.circle) {
+            } else if (mCircle.Out()) {
+                mCircle.Used();
                 SetArmAction(ArmActions.RunScoreLow);
                 mManualMode = false;
-            } else if (mControl.triangle) {
+            } else if (mTriangle.Out()) {
+                mTriangle.Used();
                 SetArmAction(ArmActions.RunScoreHigh);
                 mManualMode = false;
-            } else if (mDpadLeftDebounced) {
+            } else if (mDpadLeft.Out()) {
+                mDpadLeft.Used();
                 SetArmAction(ArmActions.RunHome);
                 mManualMode = false;
             } else if (mManualMode || joystickValid) {
@@ -522,10 +514,11 @@ public class Arm {
                         }
                         break;
                     case SpecimenWait1:
-                        if (mDpadDownDebounced) {
+                        if (mDpadDown.Out()) {
+                            mDpadDown.Used();
                             if (mAction == ArmActions.RunScoreHigh) {
                                 SetWristPos(mWristPositions[mArmPosIdx]);
-                                mMoveState = ArmMoveStates.SpecimenWaitOff;
+                                mMoveState = ArmMoveStates.SpecimenWait2;
                                 mHighSpecimenWristWait.reset();
                             } else {
                                 SetLiftArmAngle(SpecimenLowDropAngle1);
@@ -533,13 +526,9 @@ public class Arm {
                             }
                         }
                         break;
-                    case SpecimenWaitOff:
-                        if (!mDpadDownDebounced){
-                            mMoveState = ArmMoveStates.SpecimenWait2;
-                        }
-                        break;
                     case SpecimenWait2:
-                        if (mDpadDownDebounced) {
+                        if (mDpadDown.Out()) {
+                            mDpadDown.Used();
                             SetArmExtension(0.0);
                             requestRunIntake = true;
                             mMoveState = ArmMoveStates.SpecimenDropHigh;
