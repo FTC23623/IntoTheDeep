@@ -728,7 +728,7 @@ public class Arm {
         /**
          * Runs the desired action until completion
          * @param packet: ??
-         * @return true when the action is completed
+         * @return true while the action is running
          */
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -737,7 +737,7 @@ public class Arm {
                 started = true;
             }
             Process();
-            return mMoveState == ArmMoveStates.Done;
+            return mMoveState != ArmMoveStates.Done;
         }
     }
 }

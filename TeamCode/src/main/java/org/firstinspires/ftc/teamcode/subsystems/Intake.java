@@ -181,7 +181,7 @@ public class Intake {
         /**
          * Runs the desired action until completion
          * @param packet: ??
-         * @return true when the action is completed
+         * @return true while the action is running
          */
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -191,18 +191,18 @@ public class Intake {
                         RunIn();
                         started = true;
                     }
-                    return HaveElement();
+                    return !HaveElement();
                 case InStart:
                     RunIn();
-                    return true;
+                    return false;
                 case OutContinuous:
                     RunOut();
-                    return true;
+                    return false;
                 case Stop:
                     Stop();
-                    return true;
+                    return false;
                 default:
-                    return true;
+                    return false;
             }
         }
     }
