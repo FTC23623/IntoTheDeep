@@ -181,7 +181,7 @@ public class Arm {
                 mArmResetTimer.reset();
                 if (handOff) {
                     // another opmode already ran, don't need to unfold
-                    mArmResetState = 2;
+                    mArmResetState = 7;
                 } else {
                     // since this is a fresh opmode, reset everything
                     mLiftMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);

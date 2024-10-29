@@ -10,4 +10,6 @@ public class OpmodeHeading {
     public static double GetOffset() {
         return mYawOffset;
     }
+
+    public static boolean handOff = false;
 }

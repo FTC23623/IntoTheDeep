@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
+import org.firstinspires.ftc.teamcode.objects.OpmodeHeading;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Imu;
 import org.firstinspires.ftc.teamcode.subsystems.Imu_navx;
@@ -48,6 +49,8 @@ public abstract class HydrAuto extends LinearOpMode {
             idle();
         }
         Actions.runBlocking(autoSeq);
+        OpmodeHeading.SetOffset(mImu.GetYaw());
+        OpmodeHeading.handOff = true;
     }
 
     protected static double HeadingRad(double degrees) {
