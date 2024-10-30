@@ -508,7 +508,7 @@ public class Arm {
                     case ExtendToPos:
                         if (!ExtendBusy()) {
                             if (mOp.mTargetElement == ElementTypes.Specimen && (mAction == ArmActions.RunScoreHigh || mAction == ArmActions.RunScoreLow)) {
-                                SetWristPos(0.67);
+                                SetWristPos(0.71);
                                 mMoveState = ArmMoveStates.SpecimenWait1;
                             } else {
                                 SetWristPos(mWristPositions[mArmPosIdx]);
