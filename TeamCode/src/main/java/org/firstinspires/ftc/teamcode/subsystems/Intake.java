@@ -85,11 +85,11 @@ public class Intake {
                 // otherwise keep the servo off
                 if (mRunIn) {
                     mState = IntakeStates.In;
-                    mServoPower = Constants.contServoForward;
                 } else {
                     mServoPower = Constants.contServoOff;
+                    break;
                 }
-                break;
+                // fallthrough
             case In:
                 // keep the servo running
                 mServoPower = Constants.contServoForward;
@@ -191,13 +191,16 @@ public class Intake {
                         RunIn();
                         started = true;
                     }
+                    Process();
                     return !HaveElement();
                 case InStart:
                     RunIn();
-                    return false;
+                    Process();
+                    return mState != IntakeStates.In;
                 case OutContinuous:
                     RunOut();
-                    return false;
+                    Process();
+                    return mState != IntakeStates.Out;
                 case Stop:
                     Stop();
                     return false;
