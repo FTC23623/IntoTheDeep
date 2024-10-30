@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -17,6 +18,8 @@ import org.firstinspires.ftc.teamcode.subsystems.Imu_navx;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
+@Disabled
+@Autonomous (name = "auto")
 public abstract class HydrAuto extends LinearOpMode {
     protected HydraOpMode mOpMode;
     protected MecanumDrive mDrive;
@@ -57,5 +60,7 @@ public abstract class HydrAuto extends LinearOpMode {
         return Math.toRadians(degrees);
     }
 
-    public abstract SequentialAction CreateAutoSeq();
+    public SequentialAction CreateAutoSeq() {
+        return null;
+    }
 }
