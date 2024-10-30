@@ -348,6 +348,9 @@ public class Arm {
         mDpadDown.In(mControl.dpad_down);
         mDpadLeft.In(mControl.dpad_left);
         mCross.In(mControl.cross);
+        mSquare.In(mControl.square);
+        mCircle.In(mControl.circle);
+        mTriangle.In(mControl.triangle);
         // determine which action the user wants to perform
         if (mMoveState == ArmMoveStates.Done) {
             if (mCross.Out()) {
