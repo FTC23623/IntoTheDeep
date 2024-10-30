@@ -76,44 +76,45 @@ public class Arm {
     private ArmActions mAction;
     private ArmActions mLastActiveAction;
     // predetermined lift and extend positions for all arm positions
-    public static double Pos0Home_Lift = mLiftZeroPosDeg;
-    public static double Pos0Home_Extend = 0.0;
-    public static double Pos0Home_Wrist = 0.4;
-    public static double Pos1ManualPickup_Lift = -8.0;
-    public static double Pos1ManualPickup_LiftExtended = 2.0;
-    public static double Pos1ManualPickup_Extend = 0.0;
-    public static double Pos1ManualPickup_Wrist = 0.55;
-    public static double Pos2FloorPickup_Lift = 0.0;
-    public static double Pos2FloorPickup_Extend = 0.0;
-    public static double Pos2FloorPickup_Wrist = 0.55;
-    public static double Pos3SpecimenPickup_Lift = 11;
-    public static double Pos3SpecimenPickup_Extend = 0.0;
-    public static double Pos3SpecimenPickup_Wrist = 0.48;
-    public static double Pos4SpecimenLowerChamber_Lift = 40.0;
-    public static double Pos4SpecimenLowerChamber_Extend = 0.0;
-    public static double Pos4SpecimenLowerChamber_Wrist = 0.7;
-    public static double Pos5SpecimenUpperChamber_Lift = 55.0;
-    public static double Pos5SpecimenUpperChamber_Extend = 13.0;
-    public static double Pos5SpecimenUpperChamber_Wrist = 0.8;
-    public static double Pos6SampleLowerBasket_Lift = 99.0;
-    public static double Pos6SampleLowerBasket_Extend = 0.0;
-    public static double Pos6SampleLowerBasket_Wrist = 0.3;
-    public static double Pos7SampleUpperBasket_Lift = 99.0;
-    public static double Pos7SampleUpperBasket_Extend = 18.5;
-    public static double Pos7SampleUpperBasket_Wrist = 0.3;
-    public static double Pos8Carry_Lift = 20.0;
-    public static double Pos8Carry_Extend = 0.0;
-    public static double Pos8Carry_Wrist = 0.45;
-    public static double SpecimenLowDropAngle1 = 0.0;
+    private final double Pos0Home_Lift = mLiftZeroPosDeg;
+    private final double Pos0Home_Extend = 0.0;
+    private final double Pos0Home_Wrist = 0.4;
+    private final double Pos1ManualPickup_Lift = -8.0;
+    private final double Pos1ManualPickup_LiftExtended = 2.0;
+    private final double Pos1ManualPickup_Extend = 0.0;
+    private final double Pos1ManualPickup_Wrist = mWristServoMinPos + (mWristServoMaxPos - mWristServoMinPos) / 2;
+    private final double Pos2FloorPickup_Lift = 0.0;
+    private final double Pos2FloorPickup_Extend = 0.0;
+    private final double Pos2FloorPickup_Wrist = 0.55;
+    private final double Pos3SpecimenPickup_Lift = 11;
+    private final double Pos3SpecimenPickup_Extend = 0.0;
+    private final double Pos3SpecimenPickup_Wrist = 0.48;
+    private final double Pos4SpecimenLowerChamber_Lift = 40.0;
+    private final double Pos4SpecimenLowerChamber_Extend = 0.0;
+    private final double Pos4SpecimenLowerChamber_Wrist = 0.7;
+    private final double Pos5SpecimenUpperChamber_Lift = 55.0;
+    private final double Pos5SpecimenUpperChamber_Extend = 13.0;
+    private final double Pos5SpecimenUpperChamber_Wrist = 0.8;
+    private final double Pos6SampleLowerBasket_Lift = 99.0;
+    private final double Pos6SampleLowerBasket_Extend = 0.0;
+    private final double Pos6SampleLowerBasket_Wrist = 0.3;
+    private final double Pos7SampleUpperBasket_Lift = 99.0;
+    private final double Pos7SampleUpperBasket_Extend = 18.5;
+    private final double Pos7SampleUpperBasket_Wrist = 0.3;
+    private final double Pos8Carry_Lift = 20.0;
+    private final double Pos8Carry_Extend = 0.0;
+    private final double Pos8Carry_Wrist = 0.45;
+    private final double SpecimenLowDropAngle1 = 0.0;
+    private final double ManualWristHalfRange = mWristServoMaxPos - Pos1ManualPickup_Wrist;
     private ElapsedTime mHighSpecimenWristWait;
     // create arrays with the preset values for quick lookup
-    public static double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
+    private final double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
             Pos4SpecimenLowerChamber_Lift, Pos5SpecimenUpperChamber_Lift, Pos6SampleLowerBasket_Lift, Pos7SampleUpperBasket_Lift,
             Pos8Carry_Lift };
-    public static double[] mExtendPositions = { Pos0Home_Extend, Pos1ManualPickup_Extend, Pos2FloorPickup_Extend, Pos3SpecimenPickup_Extend,
+    private final double[] mExtendPositions = { Pos0Home_Extend, Pos1ManualPickup_Extend, Pos2FloorPickup_Extend, Pos3SpecimenPickup_Extend,
             Pos4SpecimenLowerChamber_Extend, Pos5SpecimenUpperChamber_Extend, Pos6SampleLowerBasket_Extend, Pos7SampleUpperBasket_Extend,
             Pos8Carry_Extend };
-    public static double[] mWristPositions = { Pos0Home_Wrist, Pos1ManualPickup_Wrist, Pos2FloorPickup_Wrist, Pos3SpecimenPickup_Wrist,
+    private final double[] mWristPositions = { Pos0Home_Wrist, Pos1ManualPickup_Wrist, Pos2FloorPickup_Wrist, Pos3SpecimenPickup_Wrist,
             Pos4SpecimenLowerChamber_Wrist, Pos5SpecimenUpperChamber_Wrist, Pos6SampleLowerBasket_Wrist, Pos7SampleUpperBasket_Wrist,
             Pos8Carry_Wrist };
     // index into the position arrays for current movement
@@ -647,8 +648,7 @@ public class Arm {
      */
     private void ProcessWristPosition() {
         if (mManualMode) {
-            SetWristPos(Pos1ManualPickup_Wrist);
-            //SetWristPos(mServoPosition + mWristServoManualIncrement * mManualWristInput);
+            SetWristPos(Pos1ManualPickup_Wrist + ManualWristHalfRange * mManualWristInput);
         }
         mWristServo.setPosition(mServoPosition);
     }
