@@ -50,5 +50,6 @@ public enum ArmPositions {
     Pos5SpecimenUpperChamber,
     Pos6SampleLowerBasket,
     Pos7SampleUpperBasket,
-    Pos8Carry
+    Pos8Carry,
+    Pos9Ascent1
 }

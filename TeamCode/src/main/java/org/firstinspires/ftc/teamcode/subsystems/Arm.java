@@ -104,19 +104,22 @@ public class Arm {
     private final double Pos8Carry_Lift = 20.0;
     private final double Pos8Carry_Extend = 0.0;
     private final double Pos8Carry_Wrist = 0.45;
+    private final double Pos9Ascent1_Lift = 42.0;
+    private final double Pos9Ascent1_Extend = 12;
+    private final double Pos9Ascent1_Wrist = 0.45;
     private final double SpecimenLowDropAngle1 = 0.0;
     private final double ManualWristHalfRange = mWristServoMaxPos - Pos1ManualPickup_Wrist;
     private ElapsedTime mHighSpecimenWristWait;
     // create arrays with the preset values for quick lookup
     private final double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
             Pos4SpecimenLowerChamber_Lift, Pos5SpecimenUpperChamber_Lift, Pos6SampleLowerBasket_Lift, Pos7SampleUpperBasket_Lift,
-            Pos8Carry_Lift };
+            Pos8Carry_Lift, Pos9Ascent1_Lift };
     private final double[] mExtendPositions = { Pos0Home_Extend, Pos1ManualPickup_Extend, Pos2FloorPickup_Extend, Pos3SpecimenPickup_Extend,
             Pos4SpecimenLowerChamber_Extend, Pos5SpecimenUpperChamber_Extend, Pos6SampleLowerBasket_Extend, Pos7SampleUpperBasket_Extend,
-            Pos8Carry_Extend };
+            Pos8Carry_Extend, Pos9Ascent1_Extend };
     private final double[] mWristPositions = { Pos0Home_Wrist, Pos1ManualPickup_Wrist, Pos2FloorPickup_Wrist, Pos3SpecimenPickup_Wrist,
             Pos4SpecimenLowerChamber_Wrist, Pos5SpecimenUpperChamber_Wrist, Pos6SampleLowerBasket_Wrist, Pos7SampleUpperBasket_Wrist,
-            Pos8Carry_Wrist };
+            Pos8Carry_Wrist, Pos9Ascent1_Wrist };
     // index into the position arrays for current movement
     private int mArmPosIdx;
     // current state of an arm movement
@@ -131,6 +134,7 @@ public class Arm {
     private final int mDebounce = 3;
     Debouncer mDpadDown;
     Debouncer mDpadLeft;
+    Debouncer mDpadUp;
     Debouncer mCross;
     Debouncer mSquare;
     Debouncer mCircle;
@@ -166,6 +170,7 @@ public class Arm {
         mHighSpecimenWristWait = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         mDpadDown = new Debouncer(mDebounce);
         mDpadLeft = new Debouncer(9);
+        mDpadUp = new Debouncer(mDebounce);
         mCross = new Debouncer(mDebounce);
         mSquare = new Debouncer(mDebounce);
         mTriangle = new Debouncer(mDebounce);
@@ -348,6 +353,7 @@ public class Arm {
         // run buttons through debouncers
         mDpadDown.In(mControl.dpad_down);
         mDpadLeft.In(mControl.dpad_left);
+        mDpadUp.In(mControl.dpad_up);
         mCross.In(mControl.cross);
         mSquare.In(mControl.square);
         mCircle.In(mControl.circle);
@@ -373,6 +379,10 @@ public class Arm {
             } else if (mDpadLeft.Out()) {
                 mDpadLeft.Used();
                 SetArmAction(ArmActions.RunHome);
+                mManualMode = false;
+            } else if (mDpadUp.Out()) {
+                mDpadUp.Used();
+                SetArmAction(ArmActions.RunAscent1);
                 mManualMode = false;
             } else if (mManualMode || joystickValid) {
                 if (mLastActiveAction != ArmActions.RunScoreHigh && mLastActiveAction != ArmActions.RunScoreLow) {
@@ -442,6 +452,12 @@ public class Arm {
                         mMoveState = ArmMoveStates.ExtendHome;
                     }
                     break;
+                case RunAscent1:
+                    mArmPosIdx = ArmPositions.valueOf("Pos9Ascent1").ordinal();
+                    if (mLastActiveAction != mAction) {
+                        mMoveState = ArmMoveStates.ExtendHome;
+                    }
+                    break;
                 case Idle:
                 case RunManual:
                     break;
@@ -467,29 +483,13 @@ public class Arm {
                 }
                 break;
             case RunManual:
-                // override the set angle and set based on the extension
-                // hypotenuse is the arm
-                // opposite is the parallel side of the vertical we are mounted to (extended to the floor)
-                // use sine to get the set angle
-                // -1 gets us the negative angle we're looking for
-                //double e = mArmBaseLenInches + GetExtensionFromTicks(mSlideMotor.getCurrentPosition());
-               // SetLiftArmAngle(Math.asin(-1 * mArmPivotHeightInches / (e)));
-                // another option that should keep a static height off of the floor
-                //SetLiftArmAngle(Math.asin(-1 * mArmPivotHeightInches / (e + e / mManualArmAutoAngleRatio)));
-                //SetLiftArmAngle(Pos1ManualPickup_Lift);
-                //SetWristPos(Pos1ManualPickup_Wrist);
-                break;
             case Idle:
-                // stop all mechanisms at their current positions
-                if (!TuneMode()) {
-                   // SetLiftArmAngle(GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition()));
-                   // SetArmExtension(GetExtensionFromTicks(mSlideMotor.getCurrentPosition()));
-                }
                 break;
             case RunPickup:
             case RunScoreHigh:
             case RunScoreLow:
             case RunCarry:
+            case RunAscent1:
                 switch (mMoveState) {
                     case ExtendHome:
                         if (ExtendHome(false)) {

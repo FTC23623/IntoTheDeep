@@ -8,4 +8,5 @@ public enum ArmActions {
     RunScoreLow,
     RunScoreHigh,
     RunCarry,
+    RunAscent1,
 }
