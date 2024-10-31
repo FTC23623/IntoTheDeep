@@ -9,4 +9,7 @@ public enum ArmActions {
     RunScoreHigh,
     RunCarry,
     RunAscent1,
+    RunScoreHighOverBar,
+    RunScoreHighDropWrist,
+    RunScoreHighScore
 }

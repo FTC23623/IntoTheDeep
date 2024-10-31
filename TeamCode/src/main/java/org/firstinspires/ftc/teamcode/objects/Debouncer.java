@@ -53,4 +53,12 @@ public class Debouncer {
     public void Used() {
         mUsed = true;
     }
+
+    /**
+     * Force debouncer to be triggered
+     */
+    public void Force() {
+        mConsecutiveCount = mActionCount;
+        mUsed = false;
+    }
 }

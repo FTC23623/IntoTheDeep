@@ -282,6 +282,10 @@ public class Arm {
         mLiftPositionTicks = (int)(degreesFromZeroPosition * mLiftTicksPerDegree);
     }
 
+    public void SetArmAngleOffset(double degreesOffset) {
+        SetLiftArmAngle(GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition()) + degreesOffset);
+    }
+
     /**
      * Calculates the arm angle from ticks
      * @param ticks: ticks to calculate from
@@ -328,6 +332,10 @@ public class Arm {
         }
         mServoPosition = pos;
         mOp.mTelemetry.addData("servoPosition", mServoPosition);
+    }
+
+    public void SetWristOffset(double posOffset) {
+        SetWristPos(mServoPosition + posOffset);
     }
 
     /**
@@ -738,11 +746,56 @@ public class Arm {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (!started) {
-                SetArmAction(mAction);
+                switch (mAction) {
+                    case RunScoreHighOverBar:
+                        SetArmAction(ArmActions.RunScoreHigh);
+                        break;
+                    case RunScoreHighDropWrist:
+                    case RunScoreHighScore:
+                        mDpadDown.Force();
+                        break;
+                    default:
+                        SetArmAction(mAction);
+                        break;
+                }
                 started = true;
             }
             Process();
-            return mMoveState != ArmMoveStates.Done;
+            switch (mAction) {
+                case RunScoreHighOverBar:
+                    return mMoveState != ArmMoveStates.SpecimenWait1;
+                case RunScoreHighDropWrist:
+                    return mMoveState != ArmMoveStates.SpecimenWait2;
+                default:
+                    return mMoveState != ArmMoveStates.Done;
+            }
+        }
+    }
+
+    public Action GetBasketPostScore(double armOffsetDegrees, double wristPosOffset) {
+        return new BasketPostScoreAction(armOffsetDegrees, wristPosOffset);
+    }
+
+    public class BasketPostScoreAction implements Action{
+        private final double mArmOffsetDegrees;
+        private final double mWristPosOffset;
+        private boolean mStarted;
+
+        public BasketPostScoreAction(double armOffsetDegrees, double wristPosOffset) {
+            mArmOffsetDegrees = armOffsetDegrees;
+            mWristPosOffset = wristPosOffset;
+            mStarted = false;
+        }
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            if (!mStarted) {
+                mStarted = true;
+                SetArmAngleOffset(mArmOffsetDegrees);
+                SetWristOffset(mWristPosOffset);
+            }
+            ProcessArmAngle();
+            ProcessWristPosition();
+            return LiftBusy();
         }
     }
 }
