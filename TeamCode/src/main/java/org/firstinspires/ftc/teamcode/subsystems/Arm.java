@@ -729,13 +729,13 @@ public class Arm {
      */
     public class RunAction implements Action {
         // action this instance will run
-        private final ArmActions mAction;
+        private final ArmActions mRRAction;
         // run has been called once
         private boolean started = false;
 
         // construct on the supplied action
         public RunAction(ArmActions action) {
-            mAction = action;
+            mRRAction = action;
         }
 
         /**
@@ -746,7 +746,7 @@ public class Arm {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (!started) {
-                switch (mAction) {
+                switch (mRRAction) {
                     case RunScoreHighOverBar:
                         SetArmAction(ArmActions.RunScoreHigh);
                         break;
@@ -755,13 +755,13 @@ public class Arm {
                         mDpadDown.Force();
                         break;
                     default:
-                        SetArmAction(mAction);
+                        SetArmAction(mRRAction);
                         break;
                 }
                 started = true;
             }
             Process();
-            switch (mAction) {
+            switch (mRRAction) {
                 case RunScoreHighOverBar:
                     return mMoveState != ArmMoveStates.SpecimenWait1;
                 case RunScoreHighDropWrist:
