@@ -63,6 +63,7 @@ public class HydrAuto_Net extends LinearOpMode {
         mIntake.Stop();
         mIntake.Process();
         Actions.runBlocking(autoSeq);
+        while (opModeIsActive());
         OpmodeHeading.SetOffset(mImu.GetYaw());
         OpmodeHeading.handOff = true;
     }
@@ -109,7 +110,7 @@ public class HydrAuto_Net extends LinearOpMode {
         return new SequentialAction(
                 mArm.GetAction(ArmActions.RunPickup),
                 takeS1ToBasket,
-                ScoreActions(),
+                ScoreActions()//,
                 /*
                 new ParallelAction(
                         driveToS2,
@@ -131,7 +132,7 @@ public class HydrAuto_Net extends LinearOpMode {
                 ScoreActions(),
                  */
                 //mArm.GetAction(ArmActions.RunAscent1),
-                park
+               // park
         );
     }
 
@@ -139,11 +140,10 @@ public class HydrAuto_Net extends LinearOpMode {
         return new SequentialAction(
                 mArm.GetAction(ArmActions.RunScoreHigh),
                 mIntake.GetAction(IntakeActions.OutContinuous),
-                new SleepAction(0.5),
+                new SleepAction(1.0),
                 mArm.GetBasketPostScore(-10, 0.05),
                 mArm.GetAction(ArmActions.RunCarry),
                 mArm.GetAction(ArmActions.RunPickup)
-                //mArm.GetAction(ArmActions.RunHome)
         );
     }
 
