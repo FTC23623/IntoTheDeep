@@ -142,6 +142,7 @@ public class HydrAuto_Net extends LinearOpMode {
                 mIntake.GetAction(IntakeActions.OutContinuous),
                 new SleepAction(1.0),
                 mArm.GetBasketPostScore(-10, 0.05),
+                mIntake.GetAction(IntakeActions.Stop),
                 mArm.GetAction(ArmActions.RunCarry),
                 mArm.GetAction(ArmActions.RunPickup)
         );
