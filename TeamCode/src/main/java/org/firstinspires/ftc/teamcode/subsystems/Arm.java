@@ -503,7 +503,11 @@ public class Arm {
                         if (ExtendHome(false)) {
                             SetWristPos(Pos0Home_Wrist);
                             mMoveState = ArmMoveStates.LiftAngle;
-                            SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
+                            if (mOp.mTargetElement == ElementTypes.Specimen && mAction == ArmActions.RunScoreHigh) {
+                                SetLiftArmAngle(mLiftPositions[mArmPosIdx] - 5.0);
+                            } else {
+                                SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
+                            }
                         } else {
                             SetArmExtension(Pos0Home_Extend);
                         }
