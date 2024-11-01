@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.objects.Debouncer;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.objects.OpmodeHeading;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
@@ -33,8 +34,8 @@ public class HyDrive extends LinearOpMode {
   private Arm mArm;
   private Intake mIntake;
   private ElapsedTime mLoopSleep;
-  private int optionsPressedCount = 0;
   protected ElementTypes mStartElementType = ElementTypes.Sample;
+  private Debouncer mDriverTriangle;
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.
@@ -52,6 +53,7 @@ public class HyDrive extends LinearOpMode {
     // mLights = new Lights(mOpMode);
     mArm = new Arm(mOpMode, false);
     mIntake = new Intake(mOpMode);
+    mDriverTriangle = new Debouncer(9);
     while (!mImu.Connected() || mImu.Calibrating()) {
       if (isStopRequested() || !opModeIsActive()) {
         break;
@@ -76,6 +78,7 @@ public class HyDrive extends LinearOpMode {
       // Pass user input to the systems
       mArm.HandleUserInput();
       mIntake.HandleUserInput();
+      HandleElementSwitch();
       // System processes
       mDrive.Process();
       // mLights.SetColor(mLens.GetDetectedSample());
@@ -90,15 +93,16 @@ public class HyDrive extends LinearOpMode {
     }
   }
 
+  /**
+   * Allows the driver to change the target element mid-opmode by holding triangle
+   * Rumble feedback on change
+   */
   private void HandleElementSwitch() {
-    if (gamepad1.options) {
-      if (optionsPressedCount < 10) {
-        ++optionsPressedCount;
-      }
-    } else {
-      optionsPressedCount = 0;
-    }
-    if (optionsPressedCount == 9) {
+    // debounce the button press
+    mDriverTriangle.In(gamepad1.triangle);
+    if (mDriverTriangle.Out()) {
+      mDriverTriangle.Used();
+      // we want to change our target element
       switch (mOpMode.mTargetElement) {
         case Sample:
           mOpMode.mTargetElement = ElementTypes.Specimen;
@@ -107,7 +111,8 @@ public class HyDrive extends LinearOpMode {
           mOpMode.mTargetElement = ElementTypes.Sample;
           break;
       }
+      gamepad1.rumbleBlips(3);
     }
+    telemetry.addData("Type", mOpMode.mTargetElement);
   }
-
 }
