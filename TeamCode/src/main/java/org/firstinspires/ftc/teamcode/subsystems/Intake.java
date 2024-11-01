@@ -203,6 +203,7 @@ public class Intake {
                     return mState != IntakeStates.Out;
                 case Stop:
                     Stop();
+                    Process();
                     return false;
                 default:
                     return false;
