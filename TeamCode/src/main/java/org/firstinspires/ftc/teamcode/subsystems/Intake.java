@@ -134,10 +134,10 @@ public class Intake {
         double distance = mSensor.getDistance(DistanceUnit.INCH);
         mOp.mTelemetry.addData("Distance", distance);
         // get the color from the distance sensor for telemetry
-        NormalizedRGBA color = mSensor.getNormalizedColors();
-        mOp.mTelemetry.addData("Red", color.red);
-        mOp.mTelemetry.addData("Green", color.green);
-        mOp.mTelemetry.addData("Blue", color.blue);
+        //NormalizedRGBA color = mSensor.getNormalizedColors();
+        //mOp.mTelemetry.addData("Red", color.red);
+        //mOp.mTelemetry.addData("Green", color.green);
+        //mOp.mTelemetry.addData("Blue", color.blue);
     }
 
     /**

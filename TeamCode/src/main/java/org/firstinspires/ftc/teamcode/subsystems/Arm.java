@@ -139,6 +139,7 @@ public class Arm {
     Debouncer mSquare;
     Debouncer mCircle;
     Debouncer mTriangle;
+    // used for auto op modes because we cannot call the process
     boolean mRunToPositionForAuton;
 
     /**
@@ -414,6 +415,7 @@ public class Arm {
      * @param action: sets the action to perform
      */
     public void SetArmAction(ArmActions action) {
+        mOp.mTelemetry.addData("last active", mLastActiveAction);
         if (action != mAction) {
             if (action == ArmActions.Idle) {
                 mLastActiveAction = mAction;
@@ -785,29 +787,52 @@ public class Arm {
         }
     }
 
+    /**
+     * Get a RR action that can adjust arm angle and wrist offset for pulling away from the basket
+     * @param armOffsetDegrees: degrees to change the arm angle from the current setting
+     * @param wristPosOffset: adjustment to the current wrist position
+     * @return the Action object for use with RR
+     */
     public Action GetBasketPostScore(double armOffsetDegrees, double wristPosOffset) {
         return new BasketPostScoreAction(armOffsetDegrees, wristPosOffset);
     }
 
-    public class BasketPostScoreAction implements Action{
+    /**
+     * Adjusts the arm angle and wrist position as specified on creation
+     */
+    public class BasketPostScoreAction implements Action {
         private final double mArmOffsetDegrees;
         private final double mWristPosOffset;
         private boolean mStarted;
 
+        /**
+         * Construct with the supplied parameters
+         * @param armOffsetDegrees: adjustment to arm angle in degrees
+         * @param wristPosOffset: adjustment to absolute servo position
+         */
         public BasketPostScoreAction(double armOffsetDegrees, double wristPosOffset) {
             mArmOffsetDegrees = armOffsetDegrees;
             mWristPosOffset = wristPosOffset;
             mStarted = false;
         }
+
+        /**
+         * RR calls this to run
+         * @param telemetryPacket: unused
+         * @return: true while not complete
+         */
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             if (!mStarted) {
                 mStarted = true;
+                // set the offsets
                 SetArmAngleOffset(mArmOffsetDegrees);
                 SetWristOffset(mWristPosOffset);
             }
+            // calls processes
             ProcessArmAngle();
             ProcessWristPosition();
+            // check for complete
             return LiftBusy();
         }
     }
