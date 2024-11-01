@@ -139,14 +139,16 @@ public class Arm {
     Debouncer mSquare;
     Debouncer mCircle;
     Debouncer mTriangle;
+    boolean mRunToPositionForAuton;
 
     /**
      * Initializes the Arm object
      * Lift and extension
      * @param opMode contains various classes needed for subsystems used with an opmode
      */
-    public Arm(HydraOpMode opMode) {
+    public Arm(HydraOpMode opMode, boolean runToPositionForAuton) {
         mOp = opMode;
+        mRunToPositionForAuton = runToPositionForAuton;
         mControl = mOp.mOperatorGamepad;
         mLiftMotor = mOp.mHardwareMap.get(DcMotorEx.class, "liftMotor");
         mSlideMotor = mOp.mHardwareMap.get(DcMotorEx.class, "slideMotor");
@@ -567,7 +569,14 @@ public class Arm {
                 break;
         }
         // Processes for each system
-        ProcessArmAngle();
+        if (mRunToPositionForAuton && mMoveState == ArmMoveStates.Done) {
+            mLiftMotor.setPower(0);
+            mLiftMotor.setTargetPosition(mLiftPositionTicks);
+            mLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            mLiftMotor.setPower(1);
+        } else {
+            ProcessArmAngle();
+        }
         ProcessArmExtension();
         ProcessWristPosition();
         mOp.mTelemetry.addData("Lift Home (sw)", LiftHome(true));

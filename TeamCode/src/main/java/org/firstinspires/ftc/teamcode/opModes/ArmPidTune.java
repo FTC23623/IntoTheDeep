@@ -25,7 +25,7 @@ public class ArmPidTune extends LinearOpMode {
         mLoopTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         HydraOpMode opMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1, gamepad2, elementType);
-        Arm arm = new Arm(opMode);
+        Arm arm = new Arm(opMode, false);
         Intake intake = new Intake(opMode);
         waitForStart();
         mLoopTime.reset();

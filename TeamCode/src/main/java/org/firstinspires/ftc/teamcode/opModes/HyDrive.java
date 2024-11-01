@@ -50,7 +50,7 @@ public class HyDrive extends LinearOpMode {
     mDrive = new Drive_Manual(mOpMode, mImu);
     // mLens = new Lens(mOpMode);
     // mLights = new Lights(mOpMode);
-    mArm = new Arm(mOpMode);
+    mArm = new Arm(mOpMode, false);
     mIntake = new Intake(mOpMode);
     while (!mImu.Connected() || mImu.Calibrating()) {
       if (isStopRequested() || !opModeIsActive()) {

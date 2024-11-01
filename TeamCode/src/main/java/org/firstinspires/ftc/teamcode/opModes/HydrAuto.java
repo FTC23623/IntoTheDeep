@@ -35,7 +35,7 @@ public abstract class HydrAuto extends LinearOpMode {
         mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null,
                 null, null, mElementType);
         mImu = new Imu_navx(mOpMode);
-        mArm = new Arm(mOpMode);
+        mArm = new Arm(mOpMode, true);
         mIntake = new Intake(mOpMode);
         mDrive = new MecanumDrive(hardwareMap, mBeginPose);
         while (!mImu.Connected() || mImu.Calibrating()) {
