@@ -642,7 +642,7 @@ public class Arm {
         if (mManualMode) {
             double power = 0;
             if (mManualExtendInput > 0) {
-                if (GetExtensionFromTicks(current) < mArmExtendMaxInches) {
+                if (GetExtensionFromTicks(current) < 13.5) {
                     power = mManualExtendInput;
                 }
             } else {
