@@ -69,7 +69,7 @@ public class HydrAuto_Net extends LinearOpMode {
     }
 
     public SequentialAction CreateAutoSeq() {
-        Pose2d basket = new Pose2d(52, 47, HeadingRad(-135));
+        Pose2d basket = new Pose2d(56, 50, HeadingRad(-135));
         Pose2d s2 = new Pose2d(59, 46, HeadingRad(-90));
         Pose2d s3 = new Pose2d(49, 46, HeadingRad(-90));
         Pose2d s4 = new Pose2d(52, 26, HeadingRad(0));
@@ -110,7 +110,9 @@ public class HydrAuto_Net extends LinearOpMode {
         return new SequentialAction(
                 mArm.GetAction(ArmActions.RunPickup),
                 takeS1ToBasket,
-                ScoreActions()//,
+                ScoreActions(),
+                mArm.GetAction(ArmActions.RunHome)
+                //,
                 /*
                 new ParallelAction(
                         driveToS2,
