@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -41,7 +42,7 @@ public class HydrAuto_Obs extends LinearOpMode {
         mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null,
                 null, null, mElementType);
         mImu = new Imu_navx(mOpMode);
-        mArm = new Arm(mOpMode, true);
+        mArm = new Arm(mOpMode, false);
         mIntake = new Intake(mOpMode);
         mDrive = new MecanumDrive(hardwareMap, mBeginPose);
         while (!mImu.Connected() || mImu.Calibrating()) {
@@ -60,9 +61,17 @@ public class HydrAuto_Obs extends LinearOpMode {
             idle();
         }
         mIntake.Stop();
-        mIntake.Process();
-        Actions.runBlocking(autoSeq);
-        while (opModeIsActive());
+        TelemetryPacket packet = new TelemetryPacket();
+        while (opModeIsActive()) {
+            mArm.Process();
+            mIntake.Process();
+            if(!autoSeq.run(packet)) {
+                break;
+            }
+            telemetry.addLine(packet.toString());
+            telemetry.update();
+            idle();
+        }
         OpmodeHeading.SetOffset(mImu.GetYaw());
         OpmodeHeading.handOff = true;
     }
