@@ -25,7 +25,8 @@ import org.firstinspires.ftc.teamcode.types.ElementTypes;
 @Config
 public class Arm {
     private final HydraOpMode mOp;
-    private final PIDController mPID;
+    private final PIDController mLiftPID;
+    private final PIDController mExtendPID;
     private final DcMotorEx mLiftMotor;
     private final DcMotorEx mSlideMotor;
     private final Servo mWristServo;
@@ -56,8 +57,11 @@ public class Arm {
     // Max extension of the arm in inches
     // max physically possible 27.95 inches
     private final double mArmExtendMaxInches = 18.5;
-    // Power level for slide motor
-    private final double mSlideMotorPower = 1.0;
+    // Arm extention PIDF controller gains
+    public static double mExtendP = 0.0;
+    public static double mExtendI = 0.0;
+    public static double mExtendD = 0.0;
+    public static double mExtendF = 0.0;
     // Whether or not we're currently utilizing manual extension to pick up samples
     private boolean mManualMode;
     // max position value for the wrist servo
@@ -156,7 +160,8 @@ public class Arm {
         mWristServo = mOp.mHardwareMap.get(Servo.class, "wristServo");
         mExtendHomeSwitch = mOp.mHardwareMap.get(RevTouchSensor.class, "extendHomeSwitch");
         mLiftHomeSwitch = mOp.mHardwareMap.get(RevTouchSensor.class, "liftHomeSwitch");
-        mPID = new PIDController(mLiftP, mLiftI, mLiftD);
+        mLiftPID = new PIDController(mLiftP, mLiftI, mLiftD);
+        mExtendPID = new PIDController(mExtendP, mExtendI, mExtendD);
         mLiftPositionTicks = 0;
         mArmExtendTicks = 0;
         mManualMode = false;
@@ -612,9 +617,9 @@ public class Arm {
                 double angle = Pos1ManualPickup_Lift + (Pos1ManualPickup_LiftExtended - Pos1ManualPickup_Lift) * extensionPct;
                 SetLiftArmAngle(angle);
             }
-            mPID.setPID(mLiftP, mLiftI, mLiftD);
+            mLiftPID.setPID(mLiftP, mLiftI, mLiftD);
             // Calculate the pid to get from current position to desired
-            double pid = mPID.calculate(currentPos, mLiftPositionTicks);
+            double pid = mLiftPID.calculate(currentPos, mLiftPositionTicks);
             // Factor in gravity
             // The force from gravity is higher when the arm is extended
             // Calculate f linearly based on how far the arm is extended
@@ -623,11 +628,13 @@ public class Arm {
             double ff = Math.cos(Math.toRadians(GetLiftAngleFromTicks(mLiftPositionTicks))) * f;
             // Add pid and feed forward to get the final power
             power = pid + ff;
+            mOp.mTelemetry.addData("Lift F", f);
+            mOp.mTelemetry.addData("Lift FF", ff);
+            mOp.mTelemetry.addData("Lift PID", pid);
         }
         mLiftMotor.setPower(power);
         mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // Telemetry for debugging
-        //mOp.mTelemetry.addData("F", f);
         mOp.mTelemetry.addData("Lift Pos", currentPos);
         mOp.mTelemetry.addData("Lift Target", mLiftPositionTicks);
         mOp.mTelemetry.addData("Lift Power", power);
@@ -638,9 +645,12 @@ public class Arm {
      * Updates the extension if it has changed
      */
     private void ProcessArmExtension() {
+        // Get current position for calculations
         int current = mSlideMotor.getCurrentPosition();
+        double power;
         if (mManualMode) {
-            double power = 0;
+            power = 0;
+            // cap the extension at min and max based on direction and mode
             if (mManualExtendInput > 0) {
                 if (GetExtensionFromTicks(current) < 13.5) {
                     power = mManualExtendInput;
@@ -650,20 +660,30 @@ public class Arm {
                     power = mManualExtendInput;
                 }
             }
-            mSlideMotor.setPower(power);
-            mSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         } else if (mExtendHomeSwitch.isPressed() && (mArmExtendTicks == 0)) {
+            // reset the motor encoder and don't drive through home
             mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            mSlideMotor.setPower(0);
-            mSlideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            power = 0;
         } else {
-            mSlideMotor.setTargetPosition(mArmExtendTicks);
-            mSlideMotor.setPower(mSlideMotorPower);
-            mSlideMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+            // angle of the arm affects the gravity feedforward
+            double angle = GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition());
+            mExtendPID.setPID(mExtendP, mExtendI, mExtendD);
+            // calculate the PID to move to the new position
+            double pid = mExtendPID.calculate(current, mArmExtendTicks);
+            // use sine to scale the gravity feed forward
+            double ff = Math.sin(angle) * mExtendF;
+            // add feed forward to the pid output
+            power = pid + ff;
+            mOp.mTelemetry.addData("Extend PID", pid);
+            mOp.mTelemetry.addData("Extend FF", ff);
         }
+        // in all cases we set power and run without encoder
+        mSlideMotor.setPower(power);
+        mSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         // Telemetry for debugging
-        mOp.mTelemetry.addData("Slide Pos", current);
-        mOp.mTelemetry.addData("Slide Target", mArmExtendTicks);
+        mOp.mTelemetry.addData("Extend Power", power);
+        mOp.mTelemetry.addData("Extend Pos", current);
+        mOp.mTelemetry.addData("Extend Target", mArmExtendTicks);
     }
 
     /**
@@ -697,6 +717,7 @@ public class Arm {
     }
 
     /**
+     * Currently unused
      * Returns whether we are auto-setting the arm and wrist angles
      * @return true when auto-set of arm and wrist angles is enabled
      */
