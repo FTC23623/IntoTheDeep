@@ -13,6 +13,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -35,6 +36,7 @@ public class HydrAuto_Net extends LinearOpMode {
     protected Intake mIntake;
     protected ElementTypes mElementType;
     protected Pose2d mBeginPose;
+    protected ElapsedTime mTimeSinceStart;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -48,6 +50,7 @@ public class HydrAuto_Net extends LinearOpMode {
         mArm = new Arm(mOpMode, false);
         mIntake = new Intake(mOpMode);
         mDrive = new MecanumDrive(hardwareMap, mBeginPose);
+        mTimeSinceStart = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         while (!mImu.Connected() || mImu.Calibrating()) {
             if (isStopRequested() || !opModeIsActive()) {
                 break;
@@ -55,10 +58,11 @@ public class HydrAuto_Net extends LinearOpMode {
         }
         SequentialAction autoSeq = CreateAutoSeq();
         waitForStart();
+        mTimeSinceStart.reset();
         while (opModeIsActive()) {
             mIntake.RunIn();
             mIntake.Process();
-            if (mArm.Startup(false)) {
+            if (mTimeSinceStart.milliseconds() > 250 && mArm.Startup(false)) {
                 break;
             }
             idle();
