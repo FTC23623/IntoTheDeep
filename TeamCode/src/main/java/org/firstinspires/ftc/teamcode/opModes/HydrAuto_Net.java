@@ -38,6 +38,7 @@ public class HydrAuto_Net extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        OpmodeHeading.handOff = false;
         mElementType = ElementTypes.Sample;
         mBeginPose = new Pose2d(39.5, 63.5, HeadingRad(-90));
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
