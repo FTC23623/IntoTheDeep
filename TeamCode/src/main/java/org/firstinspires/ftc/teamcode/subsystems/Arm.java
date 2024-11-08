@@ -51,9 +51,9 @@ public class Arm {
     private final double mLiftMaxPosDeg = 99.0;
     // Slide motor desired position in ticks
     private int mArmExtendTicks;
-    // 537.7 PPR at the motor
+    // 384.5 PPR at the motor
     // 4.72441 inches / revolution
-    private final double mArmExtendTicksPerInch = 537.7 / 4.72441;
+    private final double mArmExtendTicksPerInch = 384.5 / 4.72441;
     // Max extension of the arm in inches
     // max physically possible 27.95 inches
     private final double mArmExtendMaxInches = 18.5;
