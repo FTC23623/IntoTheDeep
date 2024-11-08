@@ -34,11 +34,12 @@ public class Arm {
     private final RevTouchSensor mLiftHomeSwitch;
     private final com.qualcomm.robotcore.hardware.Gamepad mControl;
     // Lift arm PIDF controller gains
-    private final double mLiftP = 0.004;
-    private final double mLiftI = 0.002;
-    private final double mLiftD = 0.0001;
+    public static double mLiftP = 0.004;
+    public static double mLiftI = 0.002;
+    public static double mLiftD = 0.0002;
     private final double mLiftFRetracted = 0.3;
     private final double mLiftFExtended = 0.7;
+    public static double mLiftIntegralRangeDeg = 5.0;
     // Lift arm motor ticks per degree
     // 1993.6 PPR at the motor
     // 2x1 gear
@@ -62,6 +63,7 @@ public class Arm {
     public static double mExtendI = 0.0;
     public static double mExtendD = 0.0;
     public static double mExtendF = 0.2;
+    public static double mExtendIntegralRangeInches = 2.0;
     // Whether or not we're currently utilizing manual extension to pick up samples
     private boolean mManualMode;
     // max position value for the wrist servo
@@ -618,6 +620,8 @@ public class Arm {
                 SetLiftArmAngle(angle);
             }
             mLiftPID.setPID(mLiftP, mLiftI, mLiftD);
+            // TODO: set in constructor
+            mLiftPID.setIntegrationBounds(-1 * mLiftIntegralRangeDeg * mLiftTicksPerDegree, mLiftIntegralRangeDeg * mLiftTicksPerDegree);
             // Calculate the pid to get from current position to desired
             double pid = mLiftPID.calculate(currentPos, mLiftPositionTicks);
             // Factor in gravity
@@ -668,6 +672,8 @@ public class Arm {
             // angle of the arm affects the gravity feedforward
             double angle = GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition());
             mExtendPID.setPID(mExtendP, mExtendI, mExtendD);
+            // TODO: set in constructor
+            mExtendPID.setIntegrationBounds(-1 * mExtendIntegralRangeInches * mArmExtendTicksPerInch, mExtendIntegralRangeInches * mArmExtendTicksPerInch);
             // calculate the PID to move to the new position
             double pid = mExtendPID.calculate(current, mArmExtendTicks);
             // use sine to scale the gravity feed forward
