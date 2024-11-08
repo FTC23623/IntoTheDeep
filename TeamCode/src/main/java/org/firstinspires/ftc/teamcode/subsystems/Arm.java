@@ -58,10 +58,10 @@ public class Arm {
     // max physically possible 27.95 inches
     private final double mArmExtendMaxInches = 18.5;
     // Arm extention PIDF controller gains
-    public static double mExtendP = 0.0;
+    public static double mExtendP = 0.02;
     public static double mExtendI = 0.0;
     public static double mExtendD = 0.0;
-    public static double mExtendF = 0.0;
+    public static double mExtendF = 0.2;
     // Whether or not we're currently utilizing manual extension to pick up samples
     private boolean mManualMode;
     // max position value for the wrist servo
@@ -671,7 +671,7 @@ public class Arm {
             // calculate the PID to move to the new position
             double pid = mExtendPID.calculate(current, mArmExtendTicks);
             // use sine to scale the gravity feed forward
-            double ff = Math.sin(angle) * mExtendF;
+            double ff = Math.sin(Math.toRadians(angle)) * mExtendF;
             // add feed forward to the pid output
             power = pid + ff;
             mOp.mTelemetry.addData("Extend PID", pid);
