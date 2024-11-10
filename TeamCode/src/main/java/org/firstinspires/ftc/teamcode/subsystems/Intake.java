@@ -6,24 +6,21 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
-import org.firstinspires.ftc.teamcode.types.ArmActions;
-import org.firstinspires.ftc.teamcode.types.ArmMoveStates;
 import org.firstinspires.ftc.teamcode.types.Constants;
 import org.firstinspires.ftc.teamcode.types.IntakeActions;
 import org.firstinspires.ftc.teamcode.types.IntakeStates;
 
 @Config
 public class Intake {
-    private HydraOpMode mOp;
-    private Servo mServo;
-    private ElapsedTime mTimeSinceHaveElement;
-    private ColorRangeSensor mSensor;
+    private final HydraOpMode mOp;
+    private final Servo mServo;
+    private final ElapsedTime mTimeSinceHaveElement;
+    private final ColorRangeSensor mSensor;
     private IntakeStates mState;
     private double mServoPower;
     private boolean mRunIn;
@@ -65,6 +62,9 @@ public class Intake {
         mRunOut = true;
     }
 
+    /**
+     * Stop running the intake
+     */
     public void Stop() {
         mRunIn = false;
         mRunOut = false;
@@ -151,10 +151,6 @@ public class Intake {
 
     /*
      * ROAD RUNNER API
-     */
-
-    /**
-     * Runs the intake until an element has been picked up
      */
     /**
      * Get a new action object for Road Runner to run

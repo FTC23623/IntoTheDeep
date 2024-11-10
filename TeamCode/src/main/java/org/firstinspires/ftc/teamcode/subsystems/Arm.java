@@ -35,6 +35,8 @@ public class Arm {
     private final RevTouchSensor mExtendHomeSwitch;
     private final RevTouchSensor mLiftHomeSwitch;
     private final com.qualcomm.robotcore.hardware.Gamepad mControl;
+    private final ArmDatalogger mArmDatalogger;
+    private final ElapsedTime mHighSpecimenWristWait;
     // Lift arm PIDF controller gains
     public static double mLiftP = 0.004;
     public static double mLiftI = 0.002;
@@ -60,7 +62,8 @@ public class Arm {
     // Max extension of the arm in inches
     // max physically possible 27.95 inches
     private final double mArmExtendMaxInches = 18.5;
-    // Arm extention PIDF controller gains
+    private final double mExtendForwardMax = 13.5;
+    // Arm extension PIDF controller gains
     public static double mExtendP = 0.02;
     public static double mExtendI = 0.0;
     public static double mExtendD = 0.0;
@@ -72,10 +75,6 @@ public class Arm {
     private final double mWristServoMaxPos = 0.78;
     // min position value for the wrist servo
     private final double mWristServoMinPos = 0.3;
-    // min time in seconds for full traversing of wrist servo range
-    private final double mWristServoTravelTime = 5;
-    // how much to increment the wrist servo position by every time the loop runs
-    private final double mWristServoManualIncrement;
     // manual controller input for the wrist servo
     private double mManualWristInput;
     // position to set for the wrist servo
@@ -88,7 +87,7 @@ public class Arm {
     private final double Pos0Home_Extend = 0.0;
     private final double Pos0Home_Wrist = 0.4;
     private final double Pos1ManualPickup_Lift = -8.0;
-    private final double Pos1ManualPickup_LiftExtended = 2.0;
+    private final double Pos1ManualPickup_LiftExtended = 0.0;
     private final double Pos1ManualPickup_Extend = 0.0;
     private final double Pos1ManualPickup_Wrist = mWristServoMinPos + (mWristServoMaxPos - mWristServoMinPos) / 2;
     private final double Pos2FloorPickup_Lift = 0.0;
@@ -117,7 +116,6 @@ public class Arm {
     private final double Pos9Ascent1_Wrist = 0.45;
     private final double SpecimenLowDropAngle1 = 0.0;
     private final double ManualWristHalfRange = mWristServoMaxPos - Pos1ManualPickup_Wrist;
-    private ElapsedTime mHighSpecimenWristWait;
     // create arrays with the preset values for quick lookup
     private final double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
             Pos4SpecimenLowerChamber_Lift, Pos5SpecimenUpperChamber_Lift, Pos6SampleLowerBasket_Lift, Pos7SampleUpperBasket_Lift,
@@ -139,7 +137,6 @@ public class Arm {
     // timeout to use for resetting the arm
     ElapsedTime mArmResetTimer;
     // button debouncers
-    private final int mDebounce = 3;
     Debouncer mDpadDown;
     Debouncer mDpadLeft;
     Debouncer mDpadUp;
@@ -147,9 +144,9 @@ public class Arm {
     Debouncer mSquare;
     Debouncer mCircle;
     Debouncer mTriangle;
+    Debouncer mSquareToCancel;
     // used for auto op modes because we cannot call the process
     boolean mRunToPositionForAuton;
-    private ArmDatalogger mArmDatalogger;
 
     /**
      * Initializes the Arm object
@@ -177,18 +174,18 @@ public class Arm {
         mArmPosIdx = 0;
         mManualExtendInput = 0.0;
         mLastActiveAction = ArmActions.Idle;
-        mWristServoManualIncrement = (mWristServoMaxPos - mWristServoMinPos) / (mWristServoTravelTime / (double)mOp.mLoopTime);
         mManualWristInput = 0.0;
         mArmResetState = 0;
         mArmResetTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         mHighSpecimenWristWait = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        mDpadDown = new Debouncer(mDebounce);
-        mDpadLeft = new Debouncer(9);
-        mDpadUp = new Debouncer(mDebounce);
-        mCross = new Debouncer(mDebounce);
-        mSquare = new Debouncer(mDebounce);
-        mTriangle = new Debouncer(mDebounce);
-        mCircle = new Debouncer(mDebounce);
+        mDpadDown = new Debouncer(Constants.debounce);
+        mDpadLeft = new Debouncer(Constants.debounceLong);
+        mDpadUp = new Debouncer(Constants.debounce);
+        mCross = new Debouncer(Constants.debounce);
+        mSquare = new Debouncer(Constants.debounce);
+        mTriangle = new Debouncer(Constants.debounce);
+        mCircle = new Debouncer(Constants.debounce);
+        mSquareToCancel = new Debouncer(Constants.debounceLong);
     }
 
     /**
@@ -273,10 +270,7 @@ public class Arm {
             default:
                 return true;
         }
-        if (mArmResetTimer.milliseconds() >= 5000) {
-            return true;
-        }
-        return false;
+        return mArmResetTimer.milliseconds() >= 5000;
     }
 
     /**
@@ -380,36 +374,35 @@ public class Arm {
         mSquare.In(mControl.square);
         mCircle.In(mControl.circle);
         mTriangle.In(mControl.triangle);
+        mSquareToCancel.In(mControl.square);
         // determine which action the user wants to perform
-        if (mMoveState == ArmMoveStates.Done) {
+        if (mMoveState == ArmMoveStates.Done || mSquareToCancel.Out()) {
             if (mCross.Out()) {
                 mCross.Used();
                 SetArmAction(ArmActions.RunCarry);
-                mManualMode = false;
             } else if (mSquare.Out()) {
+                if (mMoveState != ArmMoveStates.Done) {
+                    // move aborted. alert the operator
+                    mControl.rumbleBlips(5);
+                }
                 mSquare.Used();
+                mSquareToCancel.Used();
                 SetArmAction(ArmActions.RunPickup);
-                mManualMode = false;
             } else if (mCircle.Out()) {
                 mCircle.Used();
                 SetArmAction(ArmActions.RunScoreLow);
-                mManualMode = false;
             } else if (mTriangle.Out()) {
                 mTriangle.Used();
                 SetArmAction(ArmActions.RunScoreHigh);
-                mManualMode = false;
             } else if (mDpadLeft.Out()) {
                 mDpadLeft.Used();
                 SetArmAction(ArmActions.RunHome);
-                mManualMode = false;
             } else if (mDpadUp.Out()) {
                 mDpadUp.Used();
                 SetArmAction(ArmActions.RunAscent1);
-                mManualMode = false;
             } else if (mManualMode || joystickValid) {
                 if (mLastActiveAction != ArmActions.RunScoreHigh && mLastActiveAction != ArmActions.RunScoreLow) {
                     SetArmAction(ArmActions.RunManual);
-                    mManualMode = true;
                 }
             } else {
                 // keep manual mode state so we maintain position
@@ -417,8 +410,6 @@ public class Arm {
             }
         }
         mOp.mTelemetry.addData("Manual", mManualMode);
-        mOp.mTelemetry.addData("Manual Extend", mManualExtendInput);
-        mOp.mTelemetry.addData("Manual Wrist", mManualWristInput);
     }
 
     /**
@@ -426,12 +417,19 @@ public class Arm {
      * @param action: sets the action to perform
      */
     public void SetArmAction(ArmActions action) {
-        mOp.mTelemetry.addData("last active", mLastActiveAction);
         if (action != mAction) {
             if (action == ArmActions.Idle) {
+                // when we switch to idle, keep track of the last thing we did
+                // this stops us from repeating a previous action when we should already be in that position
                 mLastActiveAction = mAction;
+            } else {
+                // this is in the else because we want to keep manual mode's value when we're idle
+                // we're idle a lot when we're in manual mode
+                mManualMode = action == ArmActions.RunManual;
             }
+            // change the current action to the new one
             mAction = action;
+            // set up the position indices for the new action to use in the state machine
             switch (mAction) {
                 case RunHome:
                     mArmPosIdx = ArmPositions.valueOf("Pos0Home").ordinal();
@@ -481,8 +479,10 @@ public class Arm {
                         mMoveState = ArmMoveStates.ExtendHome;
                     }
                     break;
-                case Idle:
                 case RunManual:
+                    mLastActiveAction = ArmActions.RunManual;
+                    break;
+                case Idle:
                     break;
             }
         }
@@ -611,27 +611,33 @@ public class Arm {
      */
     private void ProcessArmAngle() {
         // Get current position for calculations
-        int currentPos = mLiftMotor.getCurrentPosition();
+        int currentLiftPos = mLiftMotor.getCurrentPosition();
         // Get the current angle of the arm
-        double currentPosDeg = GetLiftAngleFromTicks(currentPos);
-        double power = 0;
+        double currentPosDeg = GetLiftAngleFromTicks(currentLiftPos);
+        double power;
+        // trying to run home and active low switch is "pressed"
+        // reset encoders and brake the motor
         if (!mLiftHomeSwitch.isPressed() && (mLiftPositionTicks == 0)) {
             mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             power = 0;
         } else {
-            // Get percentage of arm extension
-            double extensionPct = GetExtensionFromTicks(mSlideMotor.getCurrentPosition()) / mArmExtendMaxInches;
+            // get the current arm extension in inches for a couple of calculations
+            double currentExtensionInches = GetExtensionFromTicks(mSlideMotor.getCurrentPosition());
             if (mManualMode) {
-                double angle = Pos1ManualPickup_Lift + (Pos1ManualPickup_LiftExtended - Pos1ManualPickup_Lift) * extensionPct;
+                // automatically set the angle based on the extension
+                double manualExtPct = Math.min(1.0, currentExtensionInches / mExtendForwardMax);
+                double angle = Pos1ManualPickup_Lift + (Pos1ManualPickup_LiftExtended - Pos1ManualPickup_Lift) * manualExtPct;
                 SetLiftArmAngle(angle);
             }
             mLiftPID.setPID(mLiftP, mLiftI, mLiftD);
             // TODO: set in constructor
             mLiftPID.setIntegrationBounds(-1 * mLiftIntegralRangeDeg * mLiftTicksPerDegree, mLiftIntegralRangeDeg * mLiftTicksPerDegree);
             // Calculate the pid to get from current position to desired
-            double pid = mLiftPID.calculate(currentPos, mLiftPositionTicks);
+            double pid = mLiftPID.calculate(currentLiftPos, mLiftPositionTicks);
             // Factor in gravity
             // The force from gravity is higher when the arm is extended
+            // Get percentage of arm extension
+            double extensionPct = Math.min(1.0, currentExtensionInches / mArmExtendMaxInches);
             // Calculate f linearly based on how far the arm is extended
             double f = mLiftFRetracted + extensionPct * (mLiftFExtended - mLiftFRetracted);
             // Cos will scale the force of gravity based on the current arm angle
@@ -645,14 +651,14 @@ public class Arm {
         mLiftMotor.setPower(power);
         mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // Telemetry for debugging
-        mOp.mTelemetry.addData("Lift Pos", currentPos);
+        mOp.mTelemetry.addData("Lift Pos", currentLiftPos);
         mOp.mTelemetry.addData("Lift Target", mLiftPositionTicks);
         mOp.mTelemetry.addData("Lift Power", power);
         mOp.mTelemetry.addData("Lift Pos (deg)", currentPosDeg);
         double motorCurrent = mLiftMotor.getCurrent(CurrentUnit.MILLIAMPS);
         mOp.mTelemetry.addData("Lift Current", motorCurrent);
         mArmDatalogger.liftCurrent.set(motorCurrent);
-        mArmDatalogger.liftPosition.set(currentPos);
+        mArmDatalogger.liftPosition.set(currentLiftPos);
         mArmDatalogger.liftTarget.set(mLiftPositionTicks);
         mArmDatalogger.liftPower.set(power);
     }
@@ -668,7 +674,7 @@ public class Arm {
             power = 0;
             // cap the extension at min and max based on direction and mode
             if (mManualExtendInput > 0) {
-                if (GetExtensionFromTicks(current) < 13.5) {
+                if (GetExtensionFromTicks(current) < mExtendForwardMax) {
                     power = mManualExtendInput;
                 }
             } else {

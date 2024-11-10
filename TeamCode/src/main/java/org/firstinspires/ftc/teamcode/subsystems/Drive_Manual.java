@@ -2,16 +2,21 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.objects.Debouncer;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.types.Constants;
 
 public class Drive_Manual extends Drive {
-    private com.qualcomm.robotcore.hardware.Gamepad mGamepad;
+    private final com.qualcomm.robotcore.hardware.Gamepad mGamepad;
+    private final Debouncer mCircle;
+    private final Debouncer mCross;
     public Drive_Manual(HydraOpMode op, Imu imu) {
         super(op, imu);
         mGamepad = mOp.mDriverGamepad;
         SetAllMotorPower(0.0);
         SetAllMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        mCircle = new Debouncer(Constants.debounce);
+        mCross = new Debouncer(Constants.debounce);
     }
 
     @Override
@@ -41,7 +46,9 @@ public class Drive_Manual extends Drive {
         // Get driver controller input
         drive = mGamepad.left_stick_y;
         strafe = -mGamepad.left_stick_x * 1.1;
-        if (mGamepad.cross && Constants.fieldCentricDrive) {
+        // use the cross button to aid in squaring to the field
+        mCross.In(mGamepad.cross);
+        if (mCross.Out() && Constants.fieldCentricDrive) {
             // snap to the nearest 90 deg
             double snapHeading = yaw;
             if (yaw >= -180 && yaw <= -135) {
@@ -61,7 +68,11 @@ public class Drive_Manual extends Drive {
         }
         rotX = strafe * Math.cos(-yaw / 180 * Math.PI) - drive * Math.sin(-yaw / 180 * Math.PI);
         rotY = strafe * Math.sin(-yaw / 180 * Math.PI) + drive * Math.cos(-yaw / 180 * Math.PI);
-        if (mGamepad.circle && Constants.fieldCentricDrive) {
+        // use the circle button to reset the yaw
+        mCircle.In(mGamepad.circle);
+        if (mCircle.Out() && Constants.fieldCentricDrive) {
+            mCircle.Used();
+            mGamepad.rumbleBlips(1);
             mImu.ResetYaw();
         }
         // Set max drive power based on driver input
