@@ -11,5 +11,6 @@ public enum ArmActions {
     RunAscent1,
     RunScoreHighOverBar,
     RunScoreHighDropWrist,
-    RunScoreHighScore
+    RunScoreHighScore,
+    RunAutoSamplePickup
 }

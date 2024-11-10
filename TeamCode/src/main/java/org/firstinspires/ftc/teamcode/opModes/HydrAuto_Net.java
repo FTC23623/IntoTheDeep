@@ -54,34 +54,15 @@ public class HydrAuto_Net extends HydrAuto {
                 .splineToLinearHeading(new Pose2d(25, 10, HeadingRad(180)), HeadingRad(180))
                 .build();
 
-        mAutoSeq =  new SequentialAction(
+        mAutoSeq = new SequentialAction(
                 mArm.GetAction(ArmActions.RunPickup),
                 takeS1ToBasket,
                 ScoreActions(),
-                mArm.GetAction(ArmActions.RunHome)
-                //,
-                /*
-                new ParallelAction(
-                        driveToS2,
-                        mIntake.GetAction(IntakeActions.InStart)
-                ),
+                driveToS2,
+                PickupActions(),
                 takeS2ToBasket,
                 ScoreActions(),
-                new ParallelAction(
-                        driveToS3,
-                        mIntake.GetAction(IntakeActions.InStart)
-                ),
-                takeS3ToBasket,
-                ScoreActions(),
-                new ParallelAction(
-                        driveToS4,
-                        mIntake.GetAction(IntakeActions.InStart)
-                ),
-                takeS4ToBasket,
-                ScoreActions(),
-                 */
-                //mArm.GetAction(ArmActions.RunAscent1),
-                // park
+                mArm.GetAction(ArmActions.RunHome)
         );
     }
 
@@ -94,6 +75,15 @@ public class HydrAuto_Net extends HydrAuto {
                 mIntake.GetAction(IntakeActions.Stop),
                 mArm.GetAction(ArmActions.RunCarry),
                 mArm.GetAction(ArmActions.RunPickup)
+        );
+    }
+
+    private SequentialAction PickupActions() {
+        return new SequentialAction(
+            mIntake.GetAction(IntakeActions.InStart),
+            mArm.GetAction(ArmActions.RunAutoSamplePickup),
+            mIntake.GetAction(IntakeActions.IntakeElement),
+            mArm.GetAction(ArmActions.RunCarry)
         );
     }
 }
