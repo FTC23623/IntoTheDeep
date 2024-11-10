@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -21,6 +22,8 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Lens;
 import org.firstinspires.ftc.teamcode.subsystems.Lights;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
+
+import java.util.List;
 
 @Config
 @Disabled
@@ -62,9 +65,16 @@ public class HyDrive extends LinearOpMode {
     mImu.SetYawOffset(OpmodeHeading.GetOffset());
     telemetry.addData("Auto Yaw", OpmodeHeading.GetOffset());
     telemetry.update();
+    List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+    for (LynxModule module : allHubs) {
+      module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+    }
     waitForStart();
     mLoopSleep.reset();
     while (opModeIsActive()) {
+      for (LynxModule module : allHubs) {
+        module.clearBulkCache();
+      }
       mOpMode.mLoopTime = mLoopSleep.milliseconds();
       if (mArm.Startup(false)) {
         break;
@@ -74,6 +84,9 @@ public class HyDrive extends LinearOpMode {
     }
     mLoopSleep.reset();
     while (opModeIsActive()) {
+      for (LynxModule module : allHubs) {
+        module.clearBulkCache();
+      }
       mOpMode.mLoopTime = mLoopSleep.milliseconds();
       // Pass user input to the systems
       mArm.HandleUserInput();
