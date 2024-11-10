@@ -11,9 +11,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.datalogger.ArmDatalogger;
 import org.firstinspires.ftc.teamcode.objects.Debouncer;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
@@ -147,6 +149,7 @@ public class Arm {
     Debouncer mTriangle;
     // used for auto op modes because we cannot call the process
     boolean mRunToPositionForAuton;
+    private ArmDatalogger mArmDatalogger;
 
     /**
      * Initializes the Arm object
@@ -164,6 +167,7 @@ public class Arm {
         mLiftHomeSwitch = mOp.mHardwareMap.get(RevTouchSensor.class, "liftHomeSwitch");
         mLiftPID = new PIDController(mLiftP, mLiftI, mLiftD);
         mExtendPID = new PIDController(mExtendP, mExtendI, mExtendD);
+        mArmDatalogger = new ArmDatalogger("ArmLog");
         mLiftPositionTicks = 0;
         mArmExtendTicks = 0;
         mManualMode = false;
@@ -595,8 +599,10 @@ public class Arm {
         mOp.mTelemetry.addData("Action", mAction);
         mOp.mTelemetry.addData("State", mMoveState);
         mOp.mTelemetry.addData("Index", mArmPosIdx);
-        mOp.mTelemetry.addData("Lift Current", mLiftMotor.getCurrent(CurrentUnit.MILLIAMPS));
-        mOp.mTelemetry.addData("Extend Current", mSlideMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        mArmDatalogger.action.set(mAction.toString());
+        mArmDatalogger.state.set(mMoveState.toString());
+        mArmDatalogger.battVoltage.set(mOp.mHardwareMap.get(VoltageSensor.class, "Control Hub").getVoltage());
+        mArmDatalogger.writeLine();
         return requestRunIntake;
     }
 
@@ -643,6 +649,12 @@ public class Arm {
         mOp.mTelemetry.addData("Lift Target", mLiftPositionTicks);
         mOp.mTelemetry.addData("Lift Power", power);
         mOp.mTelemetry.addData("Lift Pos (deg)", currentPosDeg);
+        double motorCurrent = mLiftMotor.getCurrent(CurrentUnit.MILLIAMPS);
+        mOp.mTelemetry.addData("Lift Current", motorCurrent);
+        mArmDatalogger.liftCurrent.set(motorCurrent);
+        mArmDatalogger.liftPosition.set(currentPos);
+        mArmDatalogger.liftTarget.set(mLiftPositionTicks);
+        mArmDatalogger.liftPower.set(power);
     }
 
     /**
@@ -690,6 +702,12 @@ public class Arm {
         mOp.mTelemetry.addData("Extend Power", power);
         mOp.mTelemetry.addData("Extend Pos", current);
         mOp.mTelemetry.addData("Extend Target", mArmExtendTicks);
+        double motorCurrent = mSlideMotor.getCurrent(CurrentUnit.MILLIAMPS);
+        mOp.mTelemetry.addData("Extend Current", motorCurrent);
+        mArmDatalogger.extendPosition.set(current);
+        mArmDatalogger.extendTarget.set(mArmExtendTicks);
+        mArmDatalogger.extendPower.set(power);
+        mArmDatalogger.extendCurrent.set(motorCurrent);
     }
 
     /**

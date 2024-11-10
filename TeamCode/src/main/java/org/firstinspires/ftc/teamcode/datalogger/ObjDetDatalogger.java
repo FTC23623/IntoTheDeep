@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.datalogger;
 
-public class HydraObjDetDatalogger {
+public class ObjDetDatalogger {
     // The underlying datalogger object - it cares only about an array of loggable fields
     private final Datalogger datalogger;
     // These are all of the fields that we want in the datalog.
@@ -18,7 +18,7 @@ public class HydraObjDetDatalogger {
     public Datalogger.GenericField aprilBearing = new Datalogger.GenericField("April Bearing");
     public Datalogger.GenericField aprilYaw = new Datalogger.GenericField("April Yaw");
 
-    public HydraObjDetDatalogger(String name)
+    public ObjDetDatalogger(String name)
     {
         // append the date to the filename
         java.util.Date now = new java.util.Date(System.currentTimeMillis());

@@ -18,7 +18,7 @@ Credit to @Windwoes (https://github.com/Windwoes).
 
 package org.firstinspires.ftc.teamcode.datalogger;
 
-public class HydraDriveDatalogger
+public class DriveDatalogger
 {
     // The underlying datalogger object - it cares only about an array of loggable fields
     private final Datalogger datalogger;
@@ -38,7 +38,7 @@ public class HydraDriveDatalogger
     public Datalogger.GenericField state = new Datalogger.GenericField("State");
     public Datalogger.GenericField yawError = new Datalogger.GenericField("Yaw Error");
 
-    public HydraDriveDatalogger(String name)
+    public DriveDatalogger(String name)
     {
         // append the date to the filename
         java.util.Date now = new java.util.Date(System.currentTimeMillis());
