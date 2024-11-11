@@ -39,7 +39,7 @@ public class Arm {
     private final ElapsedTime mHighSpecimenWristWait;
     // Lift arm PIDF controller gains
     public static double mLiftP = 0.004;
-    public static double mLiftI = 0.002;
+    public static double mLiftI = 0.0025;
     public static double mLiftD = 0.0002;
     private final double mLiftFRetracted = 0.3;
     private final double mLiftFExtended = 0.7;
