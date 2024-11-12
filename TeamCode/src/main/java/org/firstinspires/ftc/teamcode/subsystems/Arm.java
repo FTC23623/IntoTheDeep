@@ -108,9 +108,9 @@ public class Arm {
     private final double Pos9Ascent1_Lift = 42.0;
     private final double Pos9Ascent1_Extend = 12;
     private final double Pos9Ascent1_Wrist = 0.45;
-    private final double Pos10AutoSamplePickup_Lift = Pos1ManualPickup_LiftExtended;
-    private final double Pos10AutoSamplePickup_Extend = mExtendForwardMax;
-    private final double Pos10AutoSamplePickup_Wrist = 0.68;
+    private final double Pos10AutoSamplePickup_Lift = -1;
+    private final double Pos10AutoSamplePickup_Extend = 11;
+    private final double Pos10AutoSamplePickup_Wrist = 0.70;
     private final double SpecimenLowDropAngle1 = 0.0;
     private final double ManualWristHalfRange = mWristServoMaxPos - Pos1ManualPickup_Wrist;
     private ElapsedTime mHighSpecimenWristWait;

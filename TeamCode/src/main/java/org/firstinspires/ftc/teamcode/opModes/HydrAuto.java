@@ -47,6 +47,7 @@ public class HydrAuto extends LinearOpMode {
                 break;
             }
         }
+        mAutoSeq = CreateAuto();
         waitForStart();
         mTimeSinceStart.reset();
         while (opModeIsActive()) {
@@ -75,5 +76,9 @@ public class HydrAuto extends LinearOpMode {
 
     protected static double HeadingRad(double degrees) {
         return Math.toRadians(degrees);
+    }
+
+    protected SequentialAction CreateAuto() {
+        return null;
     }
 }

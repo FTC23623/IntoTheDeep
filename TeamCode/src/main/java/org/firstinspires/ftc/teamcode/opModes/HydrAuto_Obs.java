@@ -15,7 +15,10 @@ public class HydrAuto_Obs extends HydrAuto {
     public HydrAuto_Obs() {
         mElementType = ElementTypes.Specimen;
         mBeginPose = new Pose2d(-2.5, 63.5, HeadingRad(-90));
+    }
 
+    @Override
+    protected SequentialAction CreateAuto() {
         Pose2d chamberPos = new Pose2d(-2.5, 44, HeadingRad(-90));
         Pose2d forwardPos = new Pose2d(-2.5, 41, HeadingRad(-90));
         Pose2d afterScorePos = new Pose2d(-2.5, 45, HeadingRad(-90));
@@ -34,7 +37,7 @@ public class HydrAuto_Obs extends HydrAuto {
                 .splineToLinearHeading(parkPos, HeadingRad(180))
                 .build();
 
-        mAutoSeq = new SequentialAction(
+        return new SequentialAction(
                 mArm.GetAction(ArmActions.RunScoreHighOverBar),
                 takeS1ToChamber,
                 new SleepAction(1),
