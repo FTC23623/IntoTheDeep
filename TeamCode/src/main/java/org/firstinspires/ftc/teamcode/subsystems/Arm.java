@@ -678,7 +678,11 @@ public class Arm {
                     power = mManualExtendInput;
                 }
             } else {
-                if (GetExtensionFromTicks(current) > 0) {
+                if (mExtendHomeSwitch.isPressed()) {
+                    // reset the motor encoder and don't drive through home
+                    mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    power = 0;
+                } else if (GetExtensionFromTicks(current) > 0) {
                     power = mManualExtendInput;
                 }
             }
