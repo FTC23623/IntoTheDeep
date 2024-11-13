@@ -9,7 +9,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.SpecimenArm;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
 @Config
@@ -17,7 +19,8 @@ import org.firstinspires.ftc.teamcode.types.ElementTypes;
 public class ArmPidTune extends LinearOpMode {
     public static double LiftPosDeg = 0;
     public static double ExtensionPosInches = 0;
-    public static double WristPos = 1.0;
+    public static double WristPos = 0.5;
+    public static double specArmAngle = 0.0;
     public static ElementTypes elementType = ElementTypes.Sample;
     private ElapsedTime mLoopTime;
     @Override
@@ -27,6 +30,8 @@ public class ArmPidTune extends LinearOpMode {
         HydraOpMode opMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1, gamepad2, elementType);
         Arm arm = new Arm(opMode, false);
         Intake intake = new Intake(opMode);
+        SpecimenArm specArm = new SpecimenArm(opMode);
+        Claw claw = new Claw(opMode);
         waitForStart();
         mLoopTime.reset();
         while (opModeIsActive()) {
@@ -44,11 +49,14 @@ public class ArmPidTune extends LinearOpMode {
                 arm.SetLiftArmAngle(LiftPosDeg);
                 arm.SetArmExtension(ExtensionPosInches);
                 arm.SetWristPos(WristPos);
+                specArm.SetAngle(specArmAngle);
             }
             arm.HandleUserInput();
             arm.Process();
             intake.HandleUserInput();
+            claw.HandleUserInput();
             intake.Process();
+            specArm.Process();
             telemetry.update();
             mLoopTime.reset();
             idle();

@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.objects.Debouncer;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.objects.OpmodeHeading;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.Drive_Manual;
 import org.firstinspires.ftc.teamcode.subsystems.Imu;
@@ -36,6 +37,7 @@ public class HyDrive extends LinearOpMode {
   // private Lights mLights;
   private Arm mArm;
   private Intake mIntake;
+  private Claw mClaw;
   private ElapsedTime mLoopSleep;
   protected ElementTypes mStartElementType = ElementTypes.Sample;
   private Debouncer mDriverTriangle;
@@ -56,6 +58,7 @@ public class HyDrive extends LinearOpMode {
     // mLights = new Lights(mOpMode);
     mArm = new Arm(mOpMode, false);
     mIntake = new Intake(mOpMode);
+    mClaw = new Claw(mOpMode);
     mDriverTriangle = new Debouncer(9);
     while (!mImu.Connected() || mImu.Calibrating()) {
       if (isStopRequested() || !opModeIsActive()) {
@@ -91,6 +94,7 @@ public class HyDrive extends LinearOpMode {
       // Pass user input to the systems
       mArm.HandleUserInput();
       mIntake.HandleUserInput();
+      mClaw.HandleUserInput();
       HandleElementSwitch();
       // System processes
       mDrive.Process();
