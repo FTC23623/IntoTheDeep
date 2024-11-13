@@ -641,7 +641,7 @@ public class Arm {
             // Calculate f linearly based on how far the arm is extended
             double f = mLiftFRetracted + extensionPct * (mLiftFExtended - mLiftFRetracted);
             // Cos will scale the force of gravity based on the current arm angle
-            double ff = Math.cos(Math.toRadians(GetLiftAngleFromTicks(mLiftPositionTicks))) * f;
+            double ff = Math.cos(Math.toRadians(GetLiftAngleFromTicks(currentLiftPos))) * f;
             // Add pid and feed forward to get the final power
             power = pid + ff;
             mOp.mTelemetry.addData("Lift F", f);
