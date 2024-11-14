@@ -28,7 +28,6 @@ import org.firstinspires.ftc.teamcode.types.ElementTypes;
 public class Arm {
     private final HydraOpMode mOp;
     private final PIDController mLiftPID;
-    private final PIDController mExtendPID;
     private final DcMotorEx mLiftMotor;
     private final DcMotorEx mSlideMotor;
     private final Servo mWristServo;
@@ -39,15 +38,16 @@ public class Arm {
     private final ElapsedTime mHighSpecimenWristWait;
     // Lift arm PIDF controller gains
     public static double mLiftP = 0.004;
-    public static double mLiftI = 0.0025;
+    public static double mLiftI = 0.00352;
     public static double mLiftD = 0.0002;
-    private final double mLiftFRetracted = 0.3;
-    private final double mLiftFExtended = 0.7;
-    public static double mLiftIntegralRangeDeg = 5.0;
+    public static double mLiftFRetracted = 0.38;
+    public static double mLiftFExtended = 0.8;
     // Lift arm motor ticks per degree
     // 1993.6 PPR at the motor
     // 2x1 gear
-    private final double mLiftTicksPerDegree = 1993.6 / 180.0;
+    public static double mLiftTicksPerDegree = 1993.6 / 180.0;
+    public static double mLiftIntegralRangeDeg = 20.0;
+    public static int mLiftIntegralZeroRange = 10 * (int)mLiftTicksPerDegree;
     // Lift arm desired position in ticks
     private int mLiftPositionTicks;
     // Lift arm motor zero position (home)
@@ -63,12 +63,6 @@ public class Arm {
     // max physically possible 27.95 inches
     private final double mArmExtendMaxInches = 18.5;
     private final double mExtendForwardMax = 13.5;
-    // Arm extension PIDF controller gains
-    public static double mExtendP = 0.02;
-    public static double mExtendI = 0.0;
-    public static double mExtendD = 0.0;
-    public static double mExtendF = 0.2;
-    public static double mExtendIntegralRangeInches = 2.0;
     // Whether or not we're currently utilizing manual extension to pick up samples
     private boolean mManualMode;
     // max position value for the wrist servo
@@ -163,7 +157,6 @@ public class Arm {
         mExtendHomeSwitch = mOp.mHardwareMap.get(RevTouchSensor.class, "extendHomeSwitch");
         mLiftHomeSwitch = mOp.mHardwareMap.get(RevTouchSensor.class, "liftHomeSwitch");
         mLiftPID = new PIDController(mLiftP, mLiftI, mLiftD);
-        mExtendPID = new PIDController(mExtendP, mExtendI, mExtendD);
         mArmDatalogger = new ArmDatalogger("ArmLog");
         mLiftPositionTicks = 0;
         mArmExtendTicks = 0;
@@ -630,8 +623,11 @@ public class Arm {
                 SetLiftArmAngle(angle);
             }
             mLiftPID.setPID(mLiftP, mLiftI, mLiftD);
-            // TODO: set in constructor
-            mLiftPID.setIntegrationBounds(-1 * mLiftIntegralRangeDeg * mLiftTicksPerDegree, mLiftIntegralRangeDeg * mLiftTicksPerDegree);
+            if (Math.abs(currentLiftPos - mLiftPositionTicks) > mLiftIntegralZeroRange) {
+                mLiftPID.setIntegrationBounds(0, 0);
+            } else {
+                mLiftPID.setIntegrationBounds(-1 * mLiftIntegralRangeDeg * mLiftTicksPerDegree, mLiftIntegralRangeDeg * mLiftTicksPerDegree);
+            }
             // Calculate the pid to get from current position to desired
             double pid = mLiftPID.calculate(currentLiftPos, mLiftPositionTicks);
             // Factor in gravity
@@ -669,9 +665,8 @@ public class Arm {
     private void ProcessArmExtension() {
         // Get current position for calculations
         int current = mSlideMotor.getCurrentPosition();
-        double power;
         if (mManualMode) {
-            power = 0;
+            double power = 0;
             // cap the extension at min and max based on direction and mode
             if (mManualExtendInput > 0) {
                 if (GetExtensionFromTicks(current) < mExtendForwardMax) {
@@ -686,37 +681,27 @@ public class Arm {
                     power = mManualExtendInput;
                 }
             }
+            mSlideMotor.setPower(power);
+            mSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         } else if (mExtendHomeSwitch.isPressed() && (mArmExtendTicks == 0)) {
             // reset the motor encoder and don't drive through home
             mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            power = 0;
+            mSlideMotor.setPower(0);
+            mSlideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         } else {
-            // angle of the arm affects the gravity feedforward
-            double angle = GetLiftAngleFromTicks(mLiftMotor.getCurrentPosition());
-            mExtendPID.setPID(mExtendP, mExtendI, mExtendD);
-            // TODO: set in constructor
-            mExtendPID.setIntegrationBounds(-1 * mExtendIntegralRangeInches * mArmExtendTicksPerInch, mExtendIntegralRangeInches * mArmExtendTicksPerInch);
-            // calculate the PID to move to the new position
-            double pid = mExtendPID.calculate(current, mArmExtendTicks);
-            // use sine to scale the gravity feed forward
-            double ff = Math.sin(Math.toRadians(angle)) * mExtendF;
-            // add feed forward to the pid output
-            power = pid + ff;
-            mOp.mTelemetry.addData("Extend PID", pid);
-            mOp.mTelemetry.addData("Extend FF", ff);
+            mSlideMotor.setTargetPosition(mArmExtendTicks);
+            mSlideMotor.setPower(1.0);
+            mSlideMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         }
-        // in all cases we set power and run without encoder
-        mSlideMotor.setPower(power);
-        mSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         // Telemetry for debugging
-        mOp.mTelemetry.addData("Extend Power", power);
+        //mOp.mTelemetry.addData("Extend Power", power);
         mOp.mTelemetry.addData("Extend Pos", current);
         mOp.mTelemetry.addData("Extend Target", mArmExtendTicks);
         double motorCurrent = mSlideMotor.getCurrent(CurrentUnit.MILLIAMPS);
         mOp.mTelemetry.addData("Extend Current", motorCurrent);
         mArmDatalogger.extendPosition.set(current);
         mArmDatalogger.extendTarget.set(mArmExtendTicks);
-        mArmDatalogger.extendPower.set(power);
+        //mArmDatalogger.extendPower.set(power);
         mArmDatalogger.extendCurrent.set(motorCurrent);
     }
 

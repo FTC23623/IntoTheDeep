@@ -17,9 +17,9 @@ import org.firstinspires.ftc.teamcode.types.ElementTypes;
 @Config
 @TeleOp(name="ArmPidTune")
 public class ArmPidTune extends LinearOpMode {
-    public static double LiftPosDeg = 0;
+    public static double LiftPosDeg = -20;
     public static double ExtensionPosInches = 0;
-    public static double WristPos = 0.5;
+    public static double WristPos = 0.4;
     public static double specArmAngle = 0.0;
     public static ElementTypes elementType = ElementTypes.Sample;
     private ElapsedTime mLoopTime;
