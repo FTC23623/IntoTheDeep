@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Imu_navx;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Lens;
 import org.firstinspires.ftc.teamcode.subsystems.Lights;
+import org.firstinspires.ftc.teamcode.subsystems.SpecimenArm;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class HyDrive extends LinearOpMode {
   private Arm mArm;
   private Intake mIntake;
   private Claw mClaw;
+  private SpecimenArm mSpecArm;
   private ElapsedTime mLoopSleep;
   protected ElementTypes mStartElementType = ElementTypes.Sample;
   private Debouncer mDriverTriangle;
@@ -59,6 +61,7 @@ public class HyDrive extends LinearOpMode {
     mArm = new Arm(mOpMode, false);
     mIntake = new Intake(mOpMode);
     mClaw = new Claw(mOpMode);
+    mSpecArm = new SpecimenArm(mOpMode);
     mDriverTriangle = new Debouncer(9);
     while (!mImu.Connected() || mImu.Calibrating()) {
       if (isStopRequested() || !opModeIsActive()) {
@@ -95,6 +98,7 @@ public class HyDrive extends LinearOpMode {
       mArm.HandleUserInput();
       mIntake.HandleUserInput();
       mClaw.HandleUserInput();
+      mSpecArm.HandleUserInput();
       HandleElementSwitch();
       // System processes
       mDrive.Process();
@@ -103,6 +107,7 @@ public class HyDrive extends LinearOpMode {
         mIntake.RunIn();
       }
       mIntake.Process();
+      mSpecArm.Process();
       // Update telemetry once for all processes
       telemetry.update();
       mLoopSleep.reset();

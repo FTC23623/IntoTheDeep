@@ -1,46 +1,123 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.objects.Debouncer;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
+import org.firstinspires.ftc.teamcode.types.ArmActions;
+import org.firstinspires.ftc.teamcode.types.Constants;
 
 @Config
 public class SpecimenArm {
-    private HydraOpMode mOp;
+    private final HydraOpMode mOp;
     private final DcMotorEx mLiftMotor;
     private final PIDController mSpecArmPid;
     // PID coefficients
-    public static double mSpecArmP = 0.022;
-    public static double mSpecArmI = 0.0;
-    public static double mSpecArmD = 0.0018;
+    public final double mSpecArmP = 0.022;
+    public final double mSpecArmI = 0.0;
+    public final double mSpecArmD = 0.0018;
     // Target in degrees
     private double mLiftTargetTicks;
     // REV Core Hex
     // 288 ticks per rotation
     private final double mTicksPerDegree = 288.0 / 360.0;
-    public static double mStartAngle = 8.0;
-    // under at 117
-    // score run to 35
-    
+    // current arm action
+    private ArmActions mAction;
+    // angle of the arm when the opmode starts
+    private final double mStartAngle = 8.0;
+    // angles at action positions
+    private final double mHighScorePosition = 117.0;
+    private final double mScorePosition = 35.0;
+    private final double mPickupPosition = mStartAngle;
+    // button debouncers
+    private final Debouncer mSquare;
+    private final Debouncer mTriangle;
+    private final Debouncer mDpadDown;
+
+    /**
+     * Construct and initialize a new SpecimenArm
+     * @param opMode
+     */
     public SpecimenArm(HydraOpMode opMode) {
         mOp = opMode;
         mLiftMotor = mOp.mHardwareMap.get(DcMotorEx.class, "specArmMotor");
         mSpecArmPid = new PIDController(mSpecArmP, mSpecArmI, mSpecArmD);
+        mSquare = new Debouncer(Constants.debounce);
+        mTriangle = new Debouncer(Constants.debounce);
+        mDpadDown = new Debouncer(Constants.debounce);
+        mAction = ArmActions.Idle;
         mLiftTargetTicks = 0;
         mLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mLiftMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         mLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
+    /**
+     * Process input from the operator controllers
+     */
+    public void HandleUserInput() {
+        // pass button presses into the debouncer
+        mSquare.In(mOp.mOperatorGamepad.square);
+        mTriangle.In(mOp.mOperatorGamepad.triangle);
+        mDpadDown.In(mOp.mOperatorGamepad.dpad_down);
+        // handle buttons that are pressed
+        if (mSquare.Out()) {
+            mSquare.Used();
+            SetAction(ArmActions.RunPickup);
+        } else if (mTriangle.Out()) {
+            mTriangle.Used();
+            SetAction(ArmActions.RunScoreHigh);
+        } else if (mDpadDown.Out()) {
+            mDpadDown.Used();
+            SetAction(ArmActions.RunScoreHighScore);
+        }
+    }
+
+    /**
+     * Set the desired action for the arm
+     * @param action: The action to perform
+     */
+    public void SetAction(ArmActions action) {
+        mAction = action;
+        switch (action) {
+            case RunPickup:
+                SetAngle(mPickupPosition);
+                break;
+            case RunScoreHigh:
+                SetAngle(mHighScorePosition);
+                break;
+            case RunScoreHighScore:
+                SetAngle(mScorePosition);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Set the target angle for the arm
+     * @param angle: The target angle in degrees
+     */
     public void SetAngle(double angle) {
         mLiftTargetTicks = (angle - mStartAngle) * mTicksPerDegree;
     }
 
+    /**
+     * Manage the PID loop for the arm
+     */
     public void Process() {
+        // set to idle when we're near position in case something is waiting
+        if (!LiftBusy()) {
+            mAction = ArmActions.Idle;
+        }
         // get the current position to calculate error
         int currentPos = mLiftMotor.getCurrentPosition();
         mSpecArmPid.setPID(mSpecArmP, mSpecArmI, mSpecArmD);
@@ -48,8 +125,67 @@ public class SpecimenArm {
         double pid = mSpecArmPid.calculate(currentPos, mLiftTargetTicks);
         mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         mLiftMotor.setPower(pid);
-        mOp.mTelemetry.addData("A Tgt", mLiftTargetTicks);
-        mOp.mTelemetry.addData("A Pos", mLiftMotor.getCurrentPosition());
-        mOp.mTelemetry.addData("A Pwr", pid);
+        mOp.mTelemetry.addData("Spec Tgt", mLiftTargetTicks);
+        mOp.mTelemetry.addData("Spec Pos", mLiftMotor.getCurrentPosition());
+        mOp.mTelemetry.addData("Spec Pwr", pid);
+    }
+
+    /**
+     * Returns whether or not the arm is still moving to position
+     * @return true when near the target position
+     */
+    public boolean LiftBusy() {
+        return Math.abs(mLiftMotor.getCurrentPosition() - mLiftTargetTicks) < 3;
+    }
+
+    /*
+     * ROAD RUNNER API
+     */
+    /**
+     * Get a new action object for Road Runner to run
+     * @param action: the action to run in this instance
+     * @return the action object for RR to use
+     */
+    public Action GetAction(ArmActions action) {
+        return new RunAction(action);
+    }
+
+    /**
+     * Runs the supplied action until completion
+     */
+    public class RunAction implements Action {
+        // action this instance will run
+        private final ArmActions mRRAction;
+        // run has been called once
+        private boolean started = false;
+
+        // construct on the supplied action
+        public RunAction(ArmActions action) {
+            mRRAction = action;
+        }
+
+        /**
+         * Runs the desired action until completion
+         * @param packet: ??
+         * @return true while the action is running
+         */
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!started) {
+                switch (mRRAction) {
+                    case RunPickup:
+                    case RunScoreHigh:
+                    case RunScoreHighScore:
+                        SetAction(mRRAction);
+                        break;
+                    default:
+                        SetAction(ArmActions.Idle);
+                        break;
+                }
+                started = true;
+            }
+            Process();
+            return mAction != ArmActions.Idle;
+        }
     }
 }

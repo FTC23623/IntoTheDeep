@@ -386,7 +386,10 @@ public class Arm {
                 SetArmAction(ArmActions.RunScoreLow);
             } else if (mTriangle.Out()) {
                 mTriangle.Used();
-                SetArmAction(ArmActions.RunScoreHigh);
+                // if we're running specimens, the other arm consumes this action
+                if (mOp.mTargetElement == ElementTypes.Sample) {
+                    SetArmAction(ArmActions.RunScoreHigh);
+                }
             } else if (mDpadLeft.Out()) {
                 mDpadLeft.Used();
                 SetArmAction(ArmActions.RunHome);
