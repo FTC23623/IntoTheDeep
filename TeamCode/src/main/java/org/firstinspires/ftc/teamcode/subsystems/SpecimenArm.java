@@ -6,10 +6,12 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.objects.Debouncer;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
@@ -20,6 +22,7 @@ public class SpecimenArm {
     private final HydraOpMode mOp;
     private final DcMotorEx mLiftMotor;
     private final PIDController mSpecArmPid;
+    private final RevTouchSensor mLiftPickupPosition;
     // PID coefficients
     public final double mSpecArmP = 0.022;
     public final double mSpecArmI = 0.0;
@@ -49,6 +52,7 @@ public class SpecimenArm {
     public SpecimenArm(HydraOpMode opMode) {
         mOp = opMode;
         mLiftMotor = mOp.mHardwareMap.get(DcMotorEx.class, "specArmMotor");
+        mLiftPickupPosition = mOp.mHardwareMap.get(RevTouchSensor.class, "specArmPickupSwitch");
         mSpecArmPid = new PIDController(mSpecArmP, mSpecArmI, mSpecArmD);
         mSquare = new Debouncer(Constants.debounce);
         mTriangle = new Debouncer(Constants.debounce);
@@ -118,16 +122,25 @@ public class SpecimenArm {
         if (!LiftBusy()) {
             mAction = ArmActions.Idle;
         }
-        // get the current position to calculate error
-        int currentPos = mLiftMotor.getCurrentPosition();
-        mSpecArmPid.setPID(mSpecArmP, mSpecArmI, mSpecArmD);
-        // calculate pid for power and run
-        double pid = mSpecArmPid.calculate(currentPos, mLiftTargetTicks);
-        mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        mLiftMotor.setPower(pid);
+        double pid = 0;
+        if (AtPickup() && mLiftTargetTicks == 0) {
+            mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            mSpecArmPid.reset();
+            mLiftMotor.setPower(0);
+        } else {
+            // get the current position to calculate error
+            int currentPos = mLiftMotor.getCurrentPosition();
+            mSpecArmPid.setPID(mSpecArmP, mSpecArmI, mSpecArmD);
+            // calculate pid for power and run
+            pid = mSpecArmPid.calculate(currentPos, mLiftTargetTicks);
+            mLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            mLiftMotor.setPower(pid);
+        }
         mOp.mTelemetry.addData("Spec Tgt", mLiftTargetTicks);
         mOp.mTelemetry.addData("Spec Pos", mLiftMotor.getCurrentPosition());
         mOp.mTelemetry.addData("Spec Pwr", pid);
+        mOp.mTelemetry.addData("Spec Curr", mLiftMotor.getCurrent(CurrentUnit.MILLIAMPS));
+        mOp.mTelemetry.addData("Spec Pickup", AtPickup());
     }
 
     /**
@@ -136,6 +149,10 @@ public class SpecimenArm {
      */
     public boolean LiftBusy() {
         return Math.abs(mLiftMotor.getCurrentPosition() - mLiftTargetTicks) < 3;
+    }
+
+    private boolean AtPickup() {
+        return mLiftPickupPosition.isPressed();
     }
 
     /*

@@ -389,6 +389,8 @@ public class Arm {
                 // if we're running specimens, the other arm consumes this action
                 if (mOp.mTargetElement == ElementTypes.Sample) {
                     SetArmAction(ArmActions.RunScoreHigh);
+                } else {
+                    SetArmAction(ArmActions.RunPickup);
                 }
             } else if (mDpadLeft.Out()) {
                 mDpadLeft.Used();
