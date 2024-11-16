@@ -19,10 +19,10 @@ public class HydrAuto_Net extends HydrAuto {
 
     @Override
     protected SequentialAction CreateAuto() {
-        Pose2d basket = new Pose2d(56, 50, HeadingRad(-135));
-        Pose2d s2 = new Pose2d(64, 50, HeadingRad(-90));
-        Pose2d s3 = new Pose2d(49, 50, HeadingRad(-90));
-        Pose2d s4 = new Pose2d(52, 26, HeadingRad(0));
+        Pose2d basket = new Pose2d(53, 52, HeadingRad(-135));
+        Pose2d s2 = new Pose2d(62, 51, HeadingRad(-90));
+        Pose2d s3 = new Pose2d(48, 51, HeadingRad(-90));
+        Pose2d s4 = new Pose2d(50, 43, HeadingRad(-45));
 
         Action takeS1ToBasket = mDrive.actionBuilder(mBeginPose)
                 .splineToLinearHeading(basket, HeadingRad(0))
@@ -68,6 +68,10 @@ public class HydrAuto_Net extends HydrAuto {
                 driveToS3,
                 PickupActions(),
                 takeS3ToBasket,
+                ScoreActions(),
+                driveToS4,
+                PickupActions(),
+                takeS4ToBasket,
                 ScoreActions(),
                 mArm.GetAction(ArmActions.RunHome)
         );
