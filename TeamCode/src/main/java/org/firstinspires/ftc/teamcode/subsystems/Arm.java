@@ -617,6 +617,7 @@ public class Arm {
         // reset encoders and brake the motor
         if (!mLiftHomeSwitch.isPressed() && (mLiftPositionTicks == 0)) {
             mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            mLiftPID.reset();
             power = 0;
         } else {
             // get the current arm extension in inches for a couple of calculations
