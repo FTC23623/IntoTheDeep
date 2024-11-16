@@ -108,18 +108,21 @@ public class Arm {
     private final double Pos9Ascent1_Lift = 42.0;
     private final double Pos9Ascent1_Extend = 12;
     private final double Pos9Ascent1_Wrist = 0.45;
+    private final double Pos11Turtle_Lift = 230.0;
+    private final double Pos11Turtle_Extend = 0.0;
+    private final double Pos11Turtle_Wrist = 0.8;
     private final double SpecimenLowDropAngle1 = 0.0;
     private final double ManualWristHalfRange = mWristServoMaxPos - Pos1ManualPickup_Wrist;
     // create arrays with the preset values for quick lookup
     private final double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
             Pos4SpecimenLowerChamber_Lift, Pos5SpecimenUpperChamber_Lift, Pos6SampleLowerBasket_Lift, Pos7SampleUpperBasket_Lift,
-            Pos8Carry_Lift, Pos9Ascent1_Lift };
+            Pos8Carry_Lift, Pos9Ascent1_Lift, 0, Pos11Turtle_Lift };
     private final double[] mExtendPositions = { Pos0Home_Extend, Pos1ManualPickup_Extend, Pos2FloorPickup_Extend, Pos3SpecimenPickup_Extend,
             Pos4SpecimenLowerChamber_Extend, Pos5SpecimenUpperChamber_Extend, Pos6SampleLowerBasket_Extend, Pos7SampleUpperBasket_Extend,
-            Pos8Carry_Extend, Pos9Ascent1_Extend };
+            Pos8Carry_Extend, Pos9Ascent1_Extend, 0, Pos11Turtle_Extend };
     private final double[] mWristPositions = { Pos0Home_Wrist, Pos1ManualPickup_Wrist, Pos2FloorPickup_Wrist, Pos3SpecimenPickup_Wrist,
             Pos4SpecimenLowerChamber_Wrist, Pos5SpecimenUpperChamber_Wrist, Pos6SampleLowerBasket_Wrist, Pos7SampleUpperBasket_Wrist,
-            Pos8Carry_Wrist, Pos9Ascent1_Wrist };
+            Pos8Carry_Wrist, Pos9Ascent1_Wrist, 0, Pos11Turtle_Wrist };
     // index into the position arrays for current movement
     private int mArmPosIdx;
     // current state of an arm movement
@@ -134,6 +137,7 @@ public class Arm {
     Debouncer mDpadDown;
     Debouncer mDpadLeft;
     Debouncer mDpadUp;
+    Debouncer mDpadRight;
     Debouncer mCross;
     Debouncer mSquare;
     Debouncer mCircle;
@@ -174,6 +178,7 @@ public class Arm {
         mDpadDown = new Debouncer(Constants.debounce);
         mDpadLeft = new Debouncer(Constants.debounceLong);
         mDpadUp = new Debouncer(Constants.debounce);
+        mDpadRight = new Debouncer(Constants.debounceLong);
         mCross = new Debouncer(Constants.debounce);
         mSquare = new Debouncer(Constants.debounce);
         mTriangle = new Debouncer(Constants.debounce);
@@ -363,6 +368,7 @@ public class Arm {
         mDpadDown.In(mControl.dpad_down);
         mDpadLeft.In(mControl.dpad_left);
         mDpadUp.In(mControl.dpad_up);
+        mDpadRight.In(mControl.dpad_right);
         mCross.In(mControl.cross);
         mSquare.In(mControl.square);
         mCircle.In(mControl.circle);
@@ -398,6 +404,9 @@ public class Arm {
             } else if (mDpadUp.Out()) {
                 mDpadUp.Used();
                 SetArmAction(ArmActions.RunAscent1);
+            } else if (mDpadRight.Out()) {
+                mDpadRight.Used();
+                SetArmAction(ArmActions.RunTurtle);
             } else if (mManualMode || joystickValid) {
                 if (mLastActiveAction != ArmActions.RunScoreHigh && mLastActiveAction != ArmActions.RunScoreLow) {
                     SetArmAction(ArmActions.RunManual);
@@ -477,6 +486,12 @@ public class Arm {
                         mMoveState = ArmMoveStates.ExtendHome;
                     }
                     break;
+                case RunTurtle:
+                    mArmPosIdx = ArmPositions.valueOf("Pos11Turtle").ordinal();
+                    if (mLastActiveAction != mAction) {
+                        mMoveState = ArmMoveStates.ExtendHome;
+                    }
+                    break;
                 case RunManual:
                     mLastActiveAction = ArmActions.RunManual;
                     break;
@@ -511,6 +526,7 @@ public class Arm {
             case RunScoreLow:
             case RunCarry:
             case RunAscent1:
+            case RunTurtle:
                 switch (mMoveState) {
                     case ExtendHome:
                         if (ExtendHome(false)) {
