@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.objects.Debouncer;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
 import org.firstinspires.ftc.teamcode.types.Constants;
+import org.firstinspires.ftc.teamcode.types.ElementTypes;
 
 @Config
 public class SpecimenArm {
@@ -78,10 +79,14 @@ public class SpecimenArm {
             SetAction(ArmActions.RunPickup);
         } else if (mTriangle.Out()) {
             mTriangle.Used();
-            SetAction(ArmActions.RunScoreHigh);
+            if (mOp.mTargetElement == ElementTypes.Specimen) {
+                SetAction(ArmActions.RunScoreHigh);
+            }
         } else if (mDpadDown.Out()) {
             mDpadDown.Used();
-            SetAction(ArmActions.RunScoreHighScore);
+            if (mOp.mTargetElement == ElementTypes.Specimen) {
+                SetAction(ArmActions.RunScoreHighScore);
+            }
         }
     }
 
