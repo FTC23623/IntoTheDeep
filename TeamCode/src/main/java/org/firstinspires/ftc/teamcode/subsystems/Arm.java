@@ -383,6 +383,7 @@ public class Arm {
                 if (mMoveState != ArmMoveStates.Done) {
                     // move aborted. alert the operator
                     mControl.rumbleBlips(5);
+                    mAction = ArmActions.Idle;
                 }
                 mSquare.Used();
                 mSquareToCancel.Used();
