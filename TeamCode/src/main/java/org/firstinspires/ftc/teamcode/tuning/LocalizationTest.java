@@ -22,6 +22,16 @@ public class LocalizationTest extends LinearOpMode {
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
             MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
+            Localizer ours = drive.localizer;
+            int par0TicksStart = 0;
+            int par1TicksStart = 0;
+            int perpTicksStart = 0;
+            if (ours instanceof ThreeDeadWheelLocalizer) {
+                par0TicksStart = ((ThreeDeadWheelLocalizer) ours).par0.getPositionAndVelocity().position;
+                par1TicksStart = ((ThreeDeadWheelLocalizer) ours).par1.getPositionAndVelocity().position;
+                perpTicksStart = ((ThreeDeadWheelLocalizer) ours).perp.getPositionAndVelocity().position;
+            }
+
             waitForStart();
 
             while (opModeIsActive()) {
@@ -38,11 +48,10 @@ public class LocalizationTest extends LinearOpMode {
                 telemetry.addData("x", drive.pose.position.x);
                 telemetry.addData("y", drive.pose.position.y);
                 telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
-                Localizer ours = drive.localizer;
                 if (ours instanceof ThreeDeadWheelLocalizer) {
-                    int par0Ticks = ((ThreeDeadWheelLocalizer) ours).par0.getPositionAndVelocity().position;
-                    int par1Ticks = ((ThreeDeadWheelLocalizer) ours).par1.getPositionAndVelocity().position;
-                    int perpTicks = ((ThreeDeadWheelLocalizer) ours).perp.getPositionAndVelocity().position;
+                    int par0Ticks = ((ThreeDeadWheelLocalizer) ours).par0.getPositionAndVelocity().position - par0TicksStart;
+                    int par1Ticks = ((ThreeDeadWheelLocalizer) ours).par1.getPositionAndVelocity().position - par1TicksStart;
+                    int perpTicks = ((ThreeDeadWheelLocalizer) ours).perp.getPositionAndVelocity().position - perpTicksStart;
                     telemetry.addData("par0 ticks", par0Ticks);
                     telemetry.addData("par0 dist", par0Ticks * MecanumDrive.PARAMS.inPerTick);
                     telemetry.addData("par1 ticks", par1Ticks);
