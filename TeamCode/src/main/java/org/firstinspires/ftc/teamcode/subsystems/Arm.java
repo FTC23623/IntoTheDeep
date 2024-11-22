@@ -387,6 +387,7 @@ public class Arm {
                     // move aborted. alert the operator
                     mControl.rumbleBlips(5);
                     mAction = ArmActions.Idle;
+                    mLastActiveAction = ArmActions.Idle;
                 }
                 mSquare.Used();
                 mSquareToCancel.Used();
@@ -642,7 +643,7 @@ public class Arm {
         double power;
         // trying to run home and active low switch is "pressed"
         // reset encoders and brake the motor
-        if (!mLiftHomeSwitch.isPressed() && (mLiftPositionTicks == 0)) {
+        if (LiftHome(true) && (mLiftPositionTicks == 0)) {
             mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             mLiftPID.reset();
             power = 0;
@@ -706,7 +707,7 @@ public class Arm {
                     power = mManualExtendInput;
                 }
             } else {
-                if (mExtendHomeSwitch.isPressed()) {
+                if (ExtendHome(true)) {
                     // reset the motor encoder and don't drive through home
                     mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     power = 0;
@@ -716,7 +717,7 @@ public class Arm {
             }
             mSlideMotor.setPower(power);
             mSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        } else if (mExtendHomeSwitch.isPressed() && (mArmExtendTicks == 0)) {
+        } else if (ExtendHome(true) && (mArmExtendTicks == 0)) {
             // reset the motor encoder and don't drive through home
             mSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             mSlideMotor.setPower(0);
