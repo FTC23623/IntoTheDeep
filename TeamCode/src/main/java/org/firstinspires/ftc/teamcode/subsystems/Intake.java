@@ -105,6 +105,7 @@ public class Intake {
                 if (mTimeSinceHaveElement.milliseconds() > 500) {
                     // time has elapsed, go to hold
                     mState = IntakeStates.Hold;
+                    mRunIn = false;
                 }
                 break;
             case Hold:
