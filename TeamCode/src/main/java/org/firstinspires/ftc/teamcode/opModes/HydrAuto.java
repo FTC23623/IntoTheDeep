@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -19,6 +20,8 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 import org.firstinspires.ftc.teamcode.types.IntakeActions;
+
+import java.util.List;
 
 public class HydrAuto extends LinearOpMode {
     protected HydraOpMode mOpMode;
@@ -48,9 +51,16 @@ public class HydrAuto extends LinearOpMode {
             }
         }
         mAutoSeq = CreateAuto();
+        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule module : allHubs) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
         waitForStart();
         mTimeSinceStart.reset();
         while (opModeIsActive()) {
+            for (LynxModule module : allHubs) {
+                module.clearBulkCache();
+            }
             mIntake.RunIn();
             mIntake.Process();
             if (mTimeSinceStart.milliseconds() > 250 && mArm.Startup(false)) {
@@ -61,6 +71,9 @@ public class HydrAuto extends LinearOpMode {
         mIntake.Stop();
         TelemetryPacket packet = new TelemetryPacket();
         while (opModeIsActive()) {
+            for (LynxModule module : allHubs) {
+                module.clearBulkCache();
+            }
             mArm.Process();
             mIntake.Process();
             if(!mAutoSeq.run(packet)) {
@@ -69,6 +82,9 @@ public class HydrAuto extends LinearOpMode {
             telemetry.addLine(packet.toString());
             telemetry.update();
             idle();
+        }
+        for (LynxModule module : allHubs) {
+            module.clearBulkCache();
         }
         OpmodeHeading.SetOffset(mImu.GetYaw());
         OpmodeHeading.handOff = true;
