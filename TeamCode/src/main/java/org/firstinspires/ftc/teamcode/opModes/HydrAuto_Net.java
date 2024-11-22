@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -20,9 +21,9 @@ public class HydrAuto_Net extends HydrAuto {
     @Override
     protected SequentialAction CreateAuto() {
         Pose2d basket = new Pose2d(53, 52, HeadingRad(-135));
-        Pose2d s2 = new Pose2d(62, 51, HeadingRad(-90));
-        Pose2d s3 = new Pose2d(48, 51, HeadingRad(-90));
-        Pose2d s4 = new Pose2d(52, 43, HeadingRad(-45));
+        Pose2d s2 = new Pose2d(59, 50.5, HeadingRad(-90));
+        Pose2d s3 = new Pose2d(49, 51, HeadingRad(-87));
+        Pose2d s4 = new Pose2d(52, 45, HeadingRad(-45));
 
         Action takeS1ToBasket = mDrive.actionBuilder(mBeginPose)
                 .splineToLinearHeading(basket, HeadingRad(0))
@@ -59,32 +60,43 @@ public class HydrAuto_Net extends HydrAuto {
 
         return new SequentialAction(
                 mArm.GetAction(ArmActions.RunPickup),
-                takeS1ToBasket,
+                new ParallelAction(
+                    takeS1ToBasket,
+                    mArm.GetAction(ArmActions.RunScoreHigh)
+                ),
                 ScoreActions(),
                 driveToS2,
                 PickupActions(),
-                takeS2ToBasket,
+                new ParallelAction(
+                    takeS2ToBasket,
+                    mArm.GetAction(ArmActions.RunScoreHigh)
+                ),
                 ScoreActions(),
                 driveToS3,
                 PickupActions(),
-                takeS3ToBasket,
+                new ParallelAction(
+                    takeS3ToBasket,
+                    mArm.GetAction(ArmActions.RunScoreHigh)
+                ),
                 ScoreActions(),
                 driveToS4,
                 PickupActions(),
                 takeS4ToBasket,
-                ScoreActions(),
+                new ParallelAction(
+                    mArm.GetAction(ArmActions.RunScoreHigh),
+                    ScoreActions()
+                ),
                 mArm.GetAction(ArmActions.RunHome)
         );
     }
 
     private SequentialAction ScoreActions() {
         return new SequentialAction(
-                mArm.GetAction(ArmActions.RunScoreHigh),
+                //mArm.GetAction(ArmActions.RunScoreHigh),
                 mIntake.GetAction(IntakeActions.OutContinuous),
-                new SleepAction(1.0),
+                new SleepAction(0.5),
                 mArm.GetBasketPostScore(-10, 0.05),
                 mIntake.GetAction(IntakeActions.Stop),
-                mArm.GetAction(ArmActions.RunCarry),
                 mArm.GetAction(ArmActions.RunPickup)
         );
     }
