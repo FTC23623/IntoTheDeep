@@ -502,7 +502,6 @@ public class Arm {
                         mMoveState = ArmMoveStates.ExtendHome;
                     }
                     break;
-                case Idle:
                 case RunManual:
                     mLastActiveAction = ArmActions.RunManual;
                     break;
