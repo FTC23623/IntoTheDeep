@@ -1,6 +1,7 @@
 package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
@@ -15,19 +16,58 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), HeadingRad(180), 15)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(30, 63, HeadingRad(-90)))
-                .splineToLinearHeading(new Pose2d(54,54, HeadingRad(-135)),HeadingRad(0))
-                .splineToLinearHeading(new Pose2d(59,46,HeadingRad(-90)),HeadingRad(-90))
-                .splineToLinearHeading(new Pose2d(54,54, HeadingRad(-135)),HeadingRad(0))
-                .splineToLinearHeading(new Pose2d(49,46, HeadingRad(-90)),HeadingRad(-90))
-                .splineToLinearHeading(new Pose2d(54,54, HeadingRad(-135)),HeadingRad(0))
-                .splineToLinearHeading(new Pose2d(51,26,HeadingRad(0)),HeadingRad(90))
-                .splineToLinearHeading(new Pose2d(54,54, HeadingRad(-135)),HeadingRad(0))
-                       // .lineTo(new Pose2d(56,15, HeadingRad(180)), HeadingRad(180))
-               // .splineToLinearHeading(new Pose2d(38,10,HeadingRad(180)),HeadingRad(-90))
-                .splineToLinearHeading(new Pose2d(46,54, HeadingRad(-90)), HeadingRad(0))
-                .splineToLinearHeading(new Pose2d(25,10,HeadingRad(180)),HeadingRad(180))
-                .build());
+        if (false) {
+            Pose2d basket = new Pose2d(56, 50, HeadingRad(-135));
+            Pose2d s2 = new Pose2d(52, 47, HeadingRad(-105));
+            Pose2d s3 = new Pose2d(52, 47, HeadingRad(-85));
+            Pose2d s4 = new Pose2d(52, 26, HeadingRad(0));
+            myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(39.5, 63.5, HeadingRad(-90)))
+                    .splineToLinearHeading(basket, HeadingRad(0))
+                    .splineToLinearHeading(s2,HeadingRad(-90))
+                    /*.splineToLinearHeading(basket,HeadingRad(0))
+                    .splineToLinearHeading(s3,HeadingRad(-90))
+                    .splineToLinearHeading(basket,HeadingRad(0))/*
+                    /*.splineToLinearHeading(s4,HeadingRad(90))
+                    .splineToLinearHeading(basket,HeadingRad(0))*/
+                    /*.splineToLinearHeading(new Pose2d(48, 38, HeadingRad(180)), HeadingRad(-90))
+                    .splineToLinearHeading(new Pose2d(25,10,HeadingRad(180)),HeadingRad(180))*/
+                    .build());
+        } else if (true) {
+            Pose2d chamberPos1 = new Pose2d(-15, 40, HeadingRad(-90));
+            Pose2d chamberPos2 = new Pose2d(-13, 40, HeadingRad(-90));
+            Pose2d chamberPos3 = new Pose2d(-11, 40, HeadingRad(-90));
+            Pose2d chamberPos4 = new Pose2d(-9, 40, HeadingRad(-90));
+
+            Pose2d startSlideS2 = new Pose2d(-30, 40, HeadingRad(-135));
+            Pose2d finishSlideS2 = new Pose2d(-30, 42, HeadingRad(-225));
+
+            Pose2d startSlideS3 = new Pose2d(-40, 40, HeadingRad(-135));
+            Pose2d finishSlideS3 = new Pose2d(-40, 42, HeadingRad(-225));
+
+            Pose2d startSlideS4 = new Pose2d(-50, 40, HeadingRad(-135));
+            Pose2d finishSlideS4 = new Pose2d(-50, 42, HeadingRad(-225));
+
+            Pose2d specPausePos = new Pose2d(-41, 50, HeadingRad(-90));
+            Pose2d specWallPos = new Pose2d(-41, 62, HeadingRad(-90));
+
+            Pose2d parkPos = new Pose2d(-48, 60, HeadingRad(-90));
+            myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-15, 63.5, HeadingRad(-90)))
+                    .splineToLinearHeading(chamberPos1, HeadingRad(-90))
+                    .setTangent(HeadingRad(90))
+                    .splineToLinearHeading(startSlideS2, HeadingRad(-135))
+                    .splineToLinearHeading(finishSlideS2, HeadingRad(-90))
+                    .splineToLinearHeading(startSlideS3, HeadingRad(180))
+                    .splineToLinearHeading(finishSlideS3, HeadingRad(-90))
+                    .splineToLinearHeading(startSlideS4, HeadingRad(180))
+                    .splineToLinearHeading(finishSlideS4, HeadingRad(-90))
+                    .splineToLinearHeading(specPausePos, HeadingRad(0))
+                    .build());
+        } else {
+            myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(12, -38, HeadingRad(90)))
+                    .setTangent(HeadingRad(-90))
+                    .splineToLinearHeading(new Pose2d(-30, -38, HeadingRad(90)), HeadingRad(90))
+                    .build());
+        }
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_INTO_THE_DEEP_JUICE_DARK)
                 .setDarkMode(true)

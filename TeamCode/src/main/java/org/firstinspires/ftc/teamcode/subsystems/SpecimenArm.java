@@ -10,6 +10,7 @@ import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.objects.Debouncer;
@@ -180,10 +181,13 @@ public class SpecimenArm {
         private final ArmActions mRRAction;
         // run has been called once
         private boolean started = false;
+        // timeout for scoring position because of the claw
+        private final ElapsedTime mScoreTimeout;
 
         // construct on the supplied action
         public RunAction(ArmActions action) {
             mRRAction = action;
+            mScoreTimeout = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         }
 
         /**
@@ -194,6 +198,7 @@ public class SpecimenArm {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (!started) {
+                mScoreTimeout.reset();
                 switch (mRRAction) {
                     case RunPickup:
                     case RunScoreHigh:
@@ -207,7 +212,11 @@ public class SpecimenArm {
                 started = true;
             }
             Process();
-            return mAction != ArmActions.Idle;
+            if (mAction == ArmActions.RunScoreHighScore) {
+                return mScoreTimeout.milliseconds() > 250;
+            } else {
+                return mAction != ArmActions.Idle;
+            }
         }
     }
 }

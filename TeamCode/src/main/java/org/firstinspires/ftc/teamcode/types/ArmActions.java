@@ -13,5 +13,6 @@ public enum ArmActions {
     RunScoreHighDropWrist,
     RunScoreHighScore,
     RunAutoSamplePickup,
-    RunTurtle
+    RunTurtle,
+    RunAutoSamplePush
 }

@@ -60,53 +60,40 @@ public class HydrAuto_Net extends HydrAuto {
 
         return new SequentialAction(
                 mArm.GetAction(ArmActions.RunPickup),
-                new ParallelAction(
-                    takeS1ToBasket,
-                    mArm.GetAction(ArmActions.RunScoreHigh)
-                ),
-                ScoreActions(),
-                driveToS2,
-                PickupActions(),
-                new ParallelAction(
-                    takeS2ToBasket,
-                    mArm.GetAction(ArmActions.RunScoreHigh)
-                ),
-                ScoreActions(),
-                driveToS3,
-                PickupActions(),
-                new ParallelAction(
-                    takeS3ToBasket,
-                    mArm.GetAction(ArmActions.RunScoreHigh)
-                ),
-                ScoreActions(),
-                driveToS4,
-                PickupActions(),
-                takeS4ToBasket,
-                new ParallelAction(
-                    mArm.GetAction(ArmActions.RunScoreHigh),
-                    ScoreActions()
-                ),
+                ScoreActions(takeS1ToBasket),
+                PickupActions(driveToS2),
+                ScoreActions(takeS2ToBasket),
+                PickupActions(driveToS3),
+                ScoreActions(takeS3ToBasket),
+                PickupActions(driveToS4),
+                ScoreActions(takeS4ToBasket),
                 mArm.GetAction(ArmActions.RunHome)
         );
     }
 
-    private SequentialAction ScoreActions() {
+    private SequentialAction ScoreActions(Action driveToBasket) {
         return new SequentialAction(
-                //mArm.GetAction(ArmActions.RunScoreHigh),
+                new ParallelAction(
+                        driveToBasket,
+                        mArm.GetAction(ArmActions.RunScoreHigh)
+                ),
                 mIntake.GetAction(IntakeActions.OutContinuous),
                 new SleepAction(0.5),
-                mArm.GetBasketPostScore(-10, 0.05),
-                mIntake.GetAction(IntakeActions.Stop),
-                mArm.GetAction(ArmActions.RunPickup)
+                new ParallelAction(
+                        mArm.GetBasketPostScore(-10, 0.05),
+                        mIntake.GetAction(IntakeActions.Stop)
+                )
         );
     }
 
-    private SequentialAction PickupActions() {
+    private SequentialAction PickupActions(Action driveToSample) {
         return new SequentialAction(
-            mIntake.GetAction(IntakeActions.InStart),
-            mArm.GetAction(ArmActions.RunAutoSamplePickup),
-            mIntake.GetAction(IntakeActions.IntakeElement),
-            mArm.GetAction(ArmActions.RunCarry)
+                new ParallelAction(
+                        driveToSample,
+                        mIntake.GetAction(IntakeActions.InStart),
+                        mArm.GetAction(ArmActions.RunAutoSamplePickup)
+                ),
+                mIntake.GetAction(IntakeActions.IntakeElement)
         );
     }
 }
