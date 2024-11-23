@@ -82,11 +82,6 @@ public class HydrAuto_Specimen extends HydrAuto {
                 .splineToLinearHeading(specPausePos, HeadingRad(0))
                 .build();
 
-        Action pickupS2 = mDrive.actionBuilder(specPausePos)
-                .setTangent(HeadingRad(90))
-                .splineToLinearHeading(specWallPos, HeadingRad(-90))
-                .build();
-
         Action takeS2ToChamber = mDrive.actionBuilder(specWallPos)
                 .setTangent(HeadingRad(-45))
                 .splineToLinearHeading(chamberPos2, HeadingRad(-90))
@@ -95,11 +90,6 @@ public class HydrAuto_Specimen extends HydrAuto {
         Action pickupPauseS3 = mDrive.actionBuilder(chamberPos2)
                 .setTangent(HeadingRad(90))
                 .splineToLinearHeading(specPausePos, HeadingRad(180))
-                .build();
-
-        Action pickupS3 = mDrive.actionBuilder(specPausePos)
-                .setTangent(HeadingRad(90))
-                .splineToLinearHeading(specWallPos, HeadingRad(-90))
                 .build();
 
         Action takeS3ToChamber = mDrive.actionBuilder(specWallPos)
@@ -122,21 +112,33 @@ public class HydrAuto_Specimen extends HydrAuto {
                 .build();
 
         return new SequentialAction(
-                // make sure claw is closed
-                mArm.GetAction(ArmActions.RunAscent1),
+                // make sure claw is closed on the preloaded specimen
                 mClaw.GetAction(ClawActions.Close),
+                // score the first specimen
                 ScoreActions(takeS1ToChamber),
-                backup,
+                // back away so we don't hit the submersible
+                // lower the specimen arm
+                new ParallelAction(
+                        backup,
+                        mSpecArm.GetAction(ArmActions.RunPickup)
+                ),
+                // drive to the sample on the floor
+                // bring the arm down to push
                 new ParallelAction (
                         driveToS2,
                         mArm.GetAction(ArmActions.RunAutoSamplePush)
                 ),
+                // push the sample to the observation zone
                 pushS2ToObs,
+                // lift the arm to go over the sample
+                // drive to the next sample
                 new ParallelAction(
                         mArm.GetBasketPostScore(15, 0),
                         driveToS3
                 ),
+                // lower the arm to push
                 mArm.GetAction(ArmActions.RunAutoSamplePush),
+                // push the sample to the observation zone
                 pushS3ToObs,
                 /*new ParallelAction (
                         mArm.GetBasketPostScore(15, 0),
@@ -144,49 +146,61 @@ public class HydrAuto_Specimen extends HydrAuto {
                 ),
                 mArm.GetAction(ArmActions.RunAutoSamplePush),
                 pushS4ToObs,*/
-                new ParallelAction (
-                        mArm.GetAction(ArmActions.RunAscent1),
-                        mSpecArm.GetAction(ArmActions.RunPickup),
-                        pickupPauseS2
-                ),
-                new SleepAction(0.5),
-                new ParallelAction(
-                        mClaw.GetAction(ClawActions.Open),
-                        pickupS2
-                ),
-                mClaw.GetAction(ClawActions.Close),
-                new SleepAction(0.25),
+                // score specimens
+                PickupActions(pickupPauseS2, DriveToWall(specPausePos, specWallPos)),
                 ScoreActions(takeS2ToChamber),
-                PickupActions(pickupPauseS3, pickupS3),
-                ScoreActions(takeS3ToChamber),
-                park/*,
-                PickupActions(pickupPauseS4, pickupSpec),
-                ScoreActions(takeS4ToChamber),
+                PickupActions(pickupPauseS3, DriveToWall(specPausePos, specWallPos)),
+                ScoreActions(takeS3ToChamber),/*,
+                PickupActions(pickupPauseS4, DriveToWall(specPausePos, specWallPos)),
+                ScoreActions(takeS4ToChamber),*/
                 park,
-                mArm.GetAction(ArmActions.RunHome)*/
+                mArm.GetAction(ArmActions.RunHome)
         );
+    }
+
+    private Action DriveToWall(Pose2d specPausePos, Pose2d specWallPos) {
+        return mDrive.actionBuilder(specPausePos)
+                .setTangent(HeadingRad(90))
+                .splineToLinearHeading(specWallPos, HeadingRad(-90))
+                .build();
     }
 
     private SequentialAction ScoreActions(Action driveToChamber) {
         return new SequentialAction(
+                // raise specimen arm to scoring position
+                // make sure the main arm is up so it does not hit the submersible
+                // drive to scoring position
                 new ParallelAction(
                         mSpecArm.GetAction(ArmActions.RunScoreHigh),
+                        mArm.GetAction(ArmActions.RunAscent1),
                         driveToChamber
                 ),
+                // score the specimen
                 mSpecArm.GetAction(ArmActions.RunScoreHighScore),
+                // open the claw
                 mClaw.GetAction(ClawActions.Open)
         );
     }
 
-    private SequentialAction PickupActions(Action driveToSpecimen, Action driveToWall) {
+    private SequentialAction PickupActions(Action driveToObsZone, Action driveToWall) {
         return new SequentialAction(
+                // get specimen arm back to pickup position
+                // drive to the observation zone
                 new ParallelAction(
                         mSpecArm.GetAction(ArmActions.RunPickup),
-                        driveToSpecimen
+                        driveToObsZone
                 ),
-                new SleepAction(0.5),
+                // open the claw
+                // wait for the human player to align the specimen
+                new ParallelAction(
+                        mClaw.GetAction(ClawActions.Open),
+                        new SleepAction(0.5)
+                ),
+                // drive back to the wall
                 driveToWall,
+                // close the claw
                 mClaw.GetAction(ClawActions.Close),
+                // wait for the claw to close
                 new SleepAction(0.25)
         );
     }
