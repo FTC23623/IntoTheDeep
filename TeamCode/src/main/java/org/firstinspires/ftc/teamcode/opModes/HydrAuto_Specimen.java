@@ -5,19 +5,16 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.subsystems.Claw;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
 import org.firstinspires.ftc.teamcode.types.ClawActions;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
-import org.firstinspires.ftc.teamcode.types.IntakeActions;
 
-@Autonomous(name="HydrAuto_Obs", preselectTeleOp = "HyDrive_Specimen")
-public class HydrAuto_Obs extends HydrAuto {
+@Autonomous(name="HydrAuto_Specimen", preselectTeleOp = "HyDrive_Specimen")
+public class HydrAuto_Specimen extends HydrAuto {
 
-    public HydrAuto_Obs() {
+    public HydrAuto_Specimen() {
         mElementType = ElementTypes.Specimen;
         // change to 63.5
         mBeginPose = new Pose2d(-15.5, 61, HeadingRad(-90));

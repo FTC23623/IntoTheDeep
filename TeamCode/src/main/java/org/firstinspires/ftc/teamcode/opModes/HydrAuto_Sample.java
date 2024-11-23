@@ -10,10 +10,10 @@ import org.firstinspires.ftc.teamcode.types.ArmActions;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 import org.firstinspires.ftc.teamcode.types.IntakeActions;
 
-@Autonomous(name = "HydrAuto_Net", preselectTeleOp = "HyDrive_Sample")
-public class HydrAuto_Net extends HydrAuto {
+@Autonomous(name = "HydrAuto_Sample", preselectTeleOp = "HyDrive_Sample")
+public class HydrAuto_Sample extends HydrAuto {
 
-    public HydrAuto_Net() {
+    public HydrAuto_Sample() {
         mElementType = ElementTypes.Sample;
         mBeginPose = new Pose2d(39.5, 63.5, HeadingRad(-90));
         mRunIntakeAtStart = true;
