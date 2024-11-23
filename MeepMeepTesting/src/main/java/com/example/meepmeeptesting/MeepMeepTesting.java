@@ -37,24 +37,11 @@ public class MeepMeepTesting {
             Pose2d chamberPos2 = new Pose2d(-13.5, 31.5, HeadingRad(-90));
             Pose2d chamberPos3 = new Pose2d(-11.5, 31.5, HeadingRad(-90));
             Pose2d chamberPos4 = new Pose2d(-9.5, 31.5, HeadingRad(-90));
-            boolean pushWithArm = false;
-            Pose2d afterS1Score;
-            if (pushWithArm) {
-                afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
-            } else {
-                afterS1Score = new Pose2d(-36, 50, HeadingRad(-90));
-            }
 
-            Pose2d startSlideS2;
-            Pose2d finishSlideS2;
+            Pose2d afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
 
-            if (pushWithArm) {
-                startSlideS2 = new Pose2d(-30, 40, HeadingRad(-135));
-                finishSlideS2 = new Pose2d(-30, 42, HeadingRad(-225));
-            } else {
-                startSlideS2 = new Pose2d(-48, 12, HeadingRad(-90));
-                finishSlideS2 = new Pose2d(-48, 48, HeadingRad(-225));
-            }
+            Pose2d startSlideS2 = new Pose2d(-30, 40, HeadingRad(-135));
+            Pose2d finishSlideS2 = new Pose2d(-30, 42, HeadingRad(-225));
 
             Pose2d startSlideS3 = new Pose2d(-40, 40, HeadingRad(-135));
             Pose2d finishSlideS3 = new Pose2d(-40, 42, HeadingRad(-225));
@@ -73,11 +60,17 @@ public class MeepMeepTesting {
                     .setTangent(HeadingRad(-135))
                     .splineToLinearHeading(startSlideS2, HeadingRad(-135))
                     .splineToLinearHeading(finishSlideS2, HeadingRad(-90))
-                    /*.splineToLinearHeading(startSlideS3, HeadingRad(180))
+                    .splineToLinearHeading(startSlideS3, HeadingRad(180))
                     .splineToLinearHeading(finishSlideS3, HeadingRad(-90))
-                    .splineToLinearHeading(startSlideS4, HeadingRad(180))
-                    .splineToLinearHeading(finishSlideS4, HeadingRad(-90))
-                    .splineToLinearHeading(specPausePos, HeadingRad(0))*/
+                    //.splineToLinearHeading(startSlideS4, HeadingRad(180))
+                    //.splineToLinearHeading(finishSlideS4, HeadingRad(-90))
+                    .splineToLinearHeading(specPausePos, HeadingRad(0))
+                    .setTangent(HeadingRad(90))
+                    .splineToLinearHeading(specWallPos,HeadingRad(-90))
+                            .setTangent(HeadingRad(-45))
+                    .splineToLinearHeading(chamberPos2, HeadingRad(-90))
+                            .setTangent(HeadingRad(90))
+                            .splineToLinearHeading(specPausePos, HeadingRad(180))
                     .build());
         } else {
             myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(12, -38, HeadingRad(90)))

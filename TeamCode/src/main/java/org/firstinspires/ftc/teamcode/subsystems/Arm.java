@@ -40,8 +40,8 @@ public class Arm {
     public static double mLiftP = 0.004;
     public static double mLiftI = 0.00352;
     public static double mLiftD = 0.0002;
-    public static double mLiftFRetracted = 0.38;
-    public static double mLiftFExtended = 0.8;
+    public static double mLiftFRetracted = 0.35;
+    public static double mLiftFExtended = 0.6;
     // Lift arm motor ticks per degree
     // 1993.6 PPR at the motor
     // 2x1 gear
@@ -114,7 +114,7 @@ public class Arm {
     private final double Pos11Turtle_Lift = 230.0;
     private final double Pos11Turtle_Extend = 0.0;
     private final double Pos11Turtle_Wrist = 0.8;
-    private final double Pos12AutoSamplePush_Lift = -15.0;
+    private final double Pos12AutoSamplePush_Lift = -12.0;
     private final double Pos12AutoSamplePush_Extend = 13.5;
     private final double Pos12AutoSamplePush_Wrist = 0.43;
     private final double SpecimenLowDropAngle1 = 0.0;

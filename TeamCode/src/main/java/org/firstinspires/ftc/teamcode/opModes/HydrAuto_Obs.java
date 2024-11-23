@@ -25,24 +25,24 @@ public class HydrAuto_Obs extends HydrAuto {
 
     @Override
     protected SequentialAction CreateAuto() {
-        Pose2d chamberPos1 = new Pose2d(-15.5, 31.5, HeadingRad(-90));
+        Pose2d chamberPos1 = new Pose2d(-15.5, 32, HeadingRad(-90));
         Pose2d chamberPos2 = new Pose2d(-13.5, 31.5, HeadingRad(-90));
-        Pose2d chamberPos3 = new Pose2d(-11.5, 31.5, HeadingRad(-90));
+        Pose2d chamberPos3 = new Pose2d(-10, 31.5, HeadingRad(-90));
         Pose2d chamberPos4 = new Pose2d(-9.5, 31.5, HeadingRad(-90));
 
         Pose2d afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
 
         Pose2d startSlideS2 = new Pose2d(-30, 40, HeadingRad(-135));
-        Pose2d finishSlideS2 = new Pose2d(-30, 42, HeadingRad(-225));
+        Pose2d finishSlideS2 = new Pose2d(-30, 45, HeadingRad(-230));
 
         Pose2d startSlideS3 = new Pose2d(-40, 40, HeadingRad(-135));
-        Pose2d finishSlideS3 = new Pose2d(-40, 42, HeadingRad(-225));
+        Pose2d finishSlideS3 = new Pose2d(-40, 45, HeadingRad(-240));
 
-        Pose2d startSlideS4 = new Pose2d(-50, 40, HeadingRad(-135));
-        Pose2d finishSlideS4 = new Pose2d(-50, 42, HeadingRad(-225));
+        Pose2d startSlideS4 = new Pose2d(-48, 40, HeadingRad(-135));
+        Pose2d finishSlideS4 = new Pose2d(-50, 45, HeadingRad(-250));
 
-        Pose2d specPausePos = new Pose2d(-41, 50, HeadingRad(-90));
-        Pose2d specWallPos = new Pose2d(-41, 62, HeadingRad(-90));
+        Pose2d specPausePos = new Pose2d(-44, 50, HeadingRad(-90));
+        Pose2d specWallPos = new Pose2d(-44, 62, HeadingRad(-90));
 
         Pose2d parkPos = new Pose2d(-48, 60, HeadingRad(-90));
 
@@ -80,24 +80,33 @@ public class HydrAuto_Obs extends HydrAuto {
                 .splineToLinearHeading(finishSlideS4, HeadingRad(-90))
                 .build();
 
-        Action pickupPauseS2 = mDrive.actionBuilder(finishSlideS4)
+        Action pickupPauseS2 = mDrive.actionBuilder(finishSlideS3)
                 .splineToLinearHeading(specPausePos, HeadingRad(0))
                 .build();
 
-        Action pickupSpec = mDrive.actionBuilder(specPausePos)
+        Action pickupS2 = mDrive.actionBuilder(specPausePos)
+                .setTangent(HeadingRad(90))
                 .splineToLinearHeading(specWallPos, HeadingRad(-90))
                 .build();
 
         Action takeS2ToChamber = mDrive.actionBuilder(specWallPos)
-                .splineToLinearHeading(chamberPos2, HeadingRad(0))
+                .setTangent(HeadingRad(-45))
+                .splineToLinearHeading(chamberPos2, HeadingRad(-90))
                 .build();
 
         Action pickupPauseS3 = mDrive.actionBuilder(chamberPos2)
-                .splineToLinearHeading(specPausePos, HeadingRad(0))
+                .setTangent(HeadingRad(90))
+                .splineToLinearHeading(specPausePos, HeadingRad(180))
+                .build();
+
+        Action pickupS3 = mDrive.actionBuilder(specPausePos)
+                .setTangent(HeadingRad(90))
+                .splineToLinearHeading(specWallPos, HeadingRad(-90))
                 .build();
 
         Action takeS3ToChamber = mDrive.actionBuilder(specWallPos)
-                .splineToLinearHeading(chamberPos3, HeadingRad(0))
+                .setTangent(HeadingRad(-45))
+                .splineToLinearHeading(chamberPos3, HeadingRad(-90))
                 .build();
 
         Action pickupPauseS4 = mDrive.actionBuilder(chamberPos3)
@@ -105,10 +114,12 @@ public class HydrAuto_Obs extends HydrAuto {
                 .build();
 
         Action takeS4ToChamber = mDrive.actionBuilder(specWallPos)
-                .splineToLinearHeading(chamberPos4, HeadingRad(0))
+                .setTangent(HeadingRad(-45))
+                .splineToLinearHeading(chamberPos4, HeadingRad(-90))
                 .build();
 
         Action park = mDrive.actionBuilder(chamberPos4)
+                .setTangent(HeadingRad(90))
                 .splineToLinearHeading(parkPos, HeadingRad(180))
                 .build();
 
@@ -129,21 +140,28 @@ public class HydrAuto_Obs extends HydrAuto {
                 ),
                 mArm.GetAction(ArmActions.RunAutoSamplePush),
                 pushS3ToObs,
-                new ParallelAction (
+                /*new ParallelAction (
                         mArm.GetBasketPostScore(15, 0),
                         driveToS4
                 ),
                 mArm.GetAction(ArmActions.RunAutoSamplePush),
-                pushS4ToObs/*,
-                pickupPauseS2,
+                pushS4ToObs,*/
+                new ParallelAction (
+                        mArm.GetAction(ArmActions.RunAscent1),
+                        mSpecArm.GetAction(ArmActions.RunPickup),
+                        pickupPauseS2
+                ),
                 new SleepAction(0.5),
                 new ParallelAction(
                         mClaw.GetAction(ClawActions.Open),
-                        pickupSpec
+                        pickupS2
                 ),
+                mClaw.GetAction(ClawActions.Close),
+                new SleepAction(0.25),
                 ScoreActions(takeS2ToChamber),
-                PickupActions(pickupPauseS3, pickupSpec),
+                PickupActions(pickupPauseS3, pickupS3),
                 ScoreActions(takeS3ToChamber),
+                park/*,
                 PickupActions(pickupPauseS4, pickupSpec),
                 ScoreActions(takeS4ToChamber),
                 park,
@@ -164,18 +182,14 @@ public class HydrAuto_Obs extends HydrAuto {
 
     private SequentialAction PickupActions(Action driveToSpecimen, Action driveToWall) {
         return new SequentialAction(
-                mClaw.GetAction(ClawActions.Close),
                 new ParallelAction(
                         mSpecArm.GetAction(ArmActions.RunPickup),
                         driveToSpecimen
                 ),
                 new SleepAction(0.5),
-                new ParallelAction(
-                        mClaw.GetAction(ClawActions.Open),
-                        driveToWall
-                ),
+                driveToWall,
                 mClaw.GetAction(ClawActions.Close),
-                mSpecArm.GetAction(ArmActions.RunScoreHigh)
+                new SleepAction(0.25)
         );
     }
 }
