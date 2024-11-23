@@ -21,6 +21,7 @@ public class HydrAuto_Obs extends HydrAuto {
         mElementType = ElementTypes.Specimen;
         // change to 63.5
         mBeginPose = new Pose2d(-15.5, 61, HeadingRad(-90));
+        mRunIntakeAtStart = false;
     }
 
     @Override

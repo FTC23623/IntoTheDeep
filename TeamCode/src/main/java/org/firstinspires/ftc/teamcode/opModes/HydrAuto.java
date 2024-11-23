@@ -37,6 +37,7 @@ public class HydrAuto extends LinearOpMode {
     protected Pose2d mBeginPose;
     protected ElapsedTime mTimeSinceStart;
     protected SequentialAction mAutoSeq;
+    protected boolean mRunIntakeAtStart;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -67,14 +68,18 @@ public class HydrAuto extends LinearOpMode {
             for (LynxModule module : allHubs) {
                 module.clearBulkCache();
             }
-            mIntake.RunIn();
-            mIntake.Process();
-            if (mTimeSinceStart.milliseconds() > 250 && mArm.Startup(false)) {
+            if (mRunIntakeAtStart) {
+                mIntake.RunIn();
+                mIntake.Process();
+            }
+            if (mArm.Startup(false) && (!mRunIntakeAtStart || (mTimeSinceStart.milliseconds() > 250))) {
                 break;
             }
             idle();
         }
-        mIntake.Stop();
+        if (mRunIntakeAtStart) {
+            mIntake.Stop();
+        }
         TelemetryPacket packet = new TelemetryPacket();
         while (opModeIsActive()) {
             for (LynxModule module : allHubs) {

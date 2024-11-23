@@ -16,6 +16,7 @@ public class HydrAuto_Net extends HydrAuto {
     public HydrAuto_Net() {
         mElementType = ElementTypes.Sample;
         mBeginPose = new Pose2d(39.5, 63.5, HeadingRad(-90));
+        mRunIntakeAtStart = true;
     }
 
     @Override
