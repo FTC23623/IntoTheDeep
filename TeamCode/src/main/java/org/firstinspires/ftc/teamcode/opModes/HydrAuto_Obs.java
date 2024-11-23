@@ -19,15 +19,18 @@ public class HydrAuto_Obs extends HydrAuto {
 
     public HydrAuto_Obs() {
         mElementType = ElementTypes.Specimen;
-        mBeginPose = new Pose2d(-15, 63.5, HeadingRad(-90));
+        // change to 63.5
+        mBeginPose = new Pose2d(-15.5, 61, HeadingRad(-90));
     }
 
     @Override
     protected SequentialAction CreateAuto() {
-        Pose2d chamberPos1 = new Pose2d(-15, 40, HeadingRad(-90));
-        Pose2d chamberPos2 = new Pose2d(-13, 40, HeadingRad(-90));
-        Pose2d chamberPos3 = new Pose2d(-11, 40, HeadingRad(-90));
-        Pose2d chamberPos4 = new Pose2d(-9, 40, HeadingRad(-90));
+        Pose2d chamberPos1 = new Pose2d(-15.5, 31.5, HeadingRad(-90));
+        Pose2d chamberPos2 = new Pose2d(-13.5, 31.5, HeadingRad(-90));
+        Pose2d chamberPos3 = new Pose2d(-11.5, 31.5, HeadingRad(-90));
+        Pose2d chamberPos4 = new Pose2d(-9.5, 31.5, HeadingRad(-90));
+
+        Pose2d afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
 
         Pose2d startSlideS2 = new Pose2d(-30, 40, HeadingRad(-135));
         Pose2d finishSlideS2 = new Pose2d(-30, 42, HeadingRad(-225));
@@ -47,8 +50,13 @@ public class HydrAuto_Obs extends HydrAuto {
                 .splineToLinearHeading(chamberPos1, HeadingRad(-90))
                 .build();
 
-        Action driveToS2 = mDrive.actionBuilder(chamberPos1)
-                .setTangent(HeadingRad(90))
+        Action backup = mDrive.actionBuilder(chamberPos1)
+                .setTangent(HeadingRad(-90))
+                .splineToLinearHeading(afterS1Score, HeadingRad(90))
+                .build();
+
+        Action driveToS2 = mDrive.actionBuilder(afterS1Score)
+                .setTangent(HeadingRad(-135))
                 .splineToLinearHeading(startSlideS2, HeadingRad(-135))
                 .build();
 
@@ -106,25 +114,27 @@ public class HydrAuto_Obs extends HydrAuto {
 
         return new SequentialAction(
                 // make sure claw is closed
+                mArm.GetAction(ArmActions.RunAscent1),
                 mClaw.GetAction(ClawActions.Close),
                 ScoreActions(takeS1ToChamber),
+                backup,
                 new ParallelAction (
                         driveToS2,
                         mArm.GetAction(ArmActions.RunAutoSamplePush)
                 ),
                 pushS2ToObs,
                 new ParallelAction(
-                        mArm.GetBasketPostScore(5, 0),
+                        mArm.GetBasketPostScore(15, 0),
                         driveToS3
                 ),
                 mArm.GetAction(ArmActions.RunAutoSamplePush),
                 pushS3ToObs,
                 new ParallelAction (
-                        mArm.GetBasketPostScore(5, 0),
+                        mArm.GetBasketPostScore(15, 0),
                         driveToS4
                 ),
                 mArm.GetAction(ArmActions.RunAutoSamplePush),
-                pushS4ToObs,
+                pushS4ToObs/*,
                 pickupPauseS2,
                 new SleepAction(0.5),
                 new ParallelAction(
@@ -137,7 +147,7 @@ public class HydrAuto_Obs extends HydrAuto {
                 PickupActions(pickupPauseS4, pickupSpec),
                 ScoreActions(takeS4ToChamber),
                 park,
-                mArm.GetAction(ArmActions.RunHome)
+                mArm.GetAction(ArmActions.RunHome)*/
         );
     }
 

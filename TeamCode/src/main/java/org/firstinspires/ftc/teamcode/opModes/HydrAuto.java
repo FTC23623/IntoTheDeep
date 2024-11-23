@@ -82,6 +82,7 @@ public class HydrAuto extends LinearOpMode {
             }
             mArm.Process();
             mIntake.Process();
+            mSpecArm.Process();
             if(!mAutoSeq.run(packet)) {
                 break;
             }

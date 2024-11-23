@@ -105,8 +105,8 @@ public class Arm {
     private final double Pos8Carry_Lift = 20.0;
     private final double Pos8Carry_Extend = 0.0;
     private final double Pos8Carry_Wrist = 0.45;
-    private final double Pos9Ascent1_Lift = 42.0;
-    private final double Pos9Ascent1_Extend = 12;
+    private final double Pos9Ascent1_Lift = 80.0;
+    private final double Pos9Ascent1_Extend = 0;
     private final double Pos9Ascent1_Wrist = 0.45;
     private final double Pos10AutoSamplePickup_Lift = -2;
     private final double Pos10AutoSamplePickup_Extend = 11;
@@ -114,9 +114,9 @@ public class Arm {
     private final double Pos11Turtle_Lift = 230.0;
     private final double Pos11Turtle_Extend = 0.0;
     private final double Pos11Turtle_Wrist = 0.8;
-    private final double Pos12AutoSamplePush_Lift = -5.0;
+    private final double Pos12AutoSamplePush_Lift = -15.0;
     private final double Pos12AutoSamplePush_Extend = 13.5;
-    private final double Pos12AutoSamplePush_Wrist = 0.4;
+    private final double Pos12AutoSamplePush_Wrist = 0.43;
     private final double SpecimenLowDropAngle1 = 0.0;
     private final double ManualWristHalfRange = mWristServoMaxPos - Pos1ManualPickup_Wrist;
     // create arrays with the preset values for quick lookup
@@ -551,16 +551,21 @@ public class Arm {
             case RunAutoSamplePush:
                 switch (mMoveState) {
                     case ExtendHome:
-                        if (ExtendHome(false)) {
-                            SetWristPos(Pos0Home_Wrist);
+                        if (mAction == ArmActions.RunAutoSamplePush) {
+                            SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
                             mMoveState = ArmMoveStates.LiftAngle;
-                            if (mOp.mTargetElement == ElementTypes.Specimen && mAction == ArmActions.RunScoreHigh) {
-                                SetLiftArmAngle(mLiftPositions[mArmPosIdx] - 5.0);
-                            } else {
-                                SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
-                            }
                         } else {
-                            SetArmExtension(Pos0Home_Extend);
+                            if (ExtendHome(false)) {
+                                SetWristPos(Pos0Home_Wrist);
+                                mMoveState = ArmMoveStates.LiftAngle;
+                                if (mOp.mTargetElement == ElementTypes.Specimen && mAction == ArmActions.RunScoreHigh) {
+                                    SetLiftArmAngle(mLiftPositions[mArmPosIdx] - 5.0);
+                                } else {
+                                    SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
+                                }
+                            } else {
+                                SetArmExtension(Pos0Home_Extend);
+                            }
                         }
                         break;
                     case LiftAngle:
