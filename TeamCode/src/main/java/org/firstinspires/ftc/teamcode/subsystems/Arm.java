@@ -212,8 +212,8 @@ public class Arm {
                     mSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                     mSlideMotor.setDirection(DcMotorSimple.Direction.FORWARD);
                     // start by lifting the arm so we can get the intake out of the way
-                    mLiftMotor.setTargetPosition((int)(mLiftMotor.getCurrentPosition() + 10 * mLiftTicksPerDegree));
-                    mLiftMotor.setPower(0.3);
+                    mLiftMotor.setTargetPosition((int)(mLiftMotor.getCurrentPosition() + 20 * mLiftTicksPerDegree));
+                    mLiftMotor.setPower(0.8);
                     mLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     mArmResetState = 1;
                 }
@@ -242,7 +242,7 @@ public class Arm {
                     // go by 1/2 in at a time until we get there
                     mSlideMotor.setTargetPosition((int)(mSlideMotor.getCurrentPosition() - 0.5 * mArmExtendTicksPerInch));
                     mSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    mSlideMotor.setPower(0.3);
+                    mSlideMotor.setPower(0.8);
                     break;
                 }
             case 4:
@@ -260,7 +260,7 @@ public class Arm {
                 } else {
                     mLiftMotor.setTargetPosition((int)(mLiftMotor.getCurrentPosition() - 5 * mLiftTicksPerDegree));
                     mLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    mLiftMotor.setPower(0.3);
+                    mLiftMotor.setPower(0.8);
                     break;
                 }
             case 6:
