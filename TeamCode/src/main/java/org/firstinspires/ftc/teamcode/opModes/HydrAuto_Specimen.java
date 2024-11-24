@@ -172,7 +172,7 @@ public class HydrAuto_Specimen extends HydrAuto {
                 // drive to scoring position
                 new ParallelAction(
                         mSpecArm.GetAction(ArmActions.RunScoreHigh),
-                        mArm.GetAction(ArmActions.RunAscent1),
+                        mArm.GetAction(ArmActions.RunAutoSpecSafe),
                         driveToChamber
                 ),
                 // score the specimen

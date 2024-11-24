@@ -13,5 +13,6 @@ public enum ArmPositions {
     Pos9Ascent1,
     Pos10AutoSamplePickup,
     Pos11Turtle,
-    Pos12AutoSamplePush
+    Pos12AutoSamplePush,
+    Pos13AutoSpecSafe
 }
