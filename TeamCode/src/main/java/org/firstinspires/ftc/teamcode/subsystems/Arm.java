@@ -37,21 +37,21 @@ public class Arm {
     private final ArmDatalogger mArmDatalogger;
     private final ElapsedTime mHighSpecimenWristWait;
     // Lift arm PIDF controller gains
-    public static double mLiftP = 0.004;
-    public static double mLiftI = 0.00352;
-    public static double mLiftD = 0.0002;
-    public static double mLiftFRetracted = 0.35;
-    public static double mLiftFExtended = 0.6;
+    private final double mLiftP = 0.004;
+    private final double mLiftI = 0.00352;
+    private final double mLiftD = 0.0002;
+    private final double mLiftFRetracted = 0.35;
+    private final double mLiftFExtended = 0.6;
     // Lift arm motor ticks per degree
     // 1993.6 PPR at the motor
     // 2x1 gear
-    public static double mLiftTicksPerDegree = 1993.6 / 180.0;
-    public static double mLiftIntegralRangeDeg = 20.0;
-    public static int mLiftIntegralZeroRange = 10 * (int)mLiftTicksPerDegree;
+    private final double mLiftTicksPerDegree = 1993.6 / 180.0;
+    private final double mLiftIntegralRangeDeg = 20.0;
+    private final int mLiftIntegralZeroRange = 10 * (int)mLiftTicksPerDegree;
     // Lift arm desired position in ticks
     private int mLiftPositionTicks;
     // Lift arm motor zero position (home)
-    public static double mLiftZeroPosDeg = -20.0;
+    private final double mLiftZeroPosDeg = -20.0;
     // Lift arm motor max lift position
     private final double mLiftMaxPosDeg = 99.0;
     // Slide motor desired position in ticks

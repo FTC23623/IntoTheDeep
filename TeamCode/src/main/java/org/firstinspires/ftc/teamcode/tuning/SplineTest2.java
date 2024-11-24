@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.TankDrive;
 
-@TeleOp(name = "SplineTest2")
+//@TeleOp(name = "SplineTest2")
 public final class SplineTest2 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
