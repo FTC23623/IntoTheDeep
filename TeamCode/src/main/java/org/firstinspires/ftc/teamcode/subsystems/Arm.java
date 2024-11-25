@@ -120,18 +120,24 @@ public class Arm {
     private final double Pos13AutoSpecSafe_Lift = 80.0;
     private final double Pos13AutoSpecSafe_Extend = 0.0;
     private final double Pos13AutoSpecSafe_Wrist = 0.45;
+    private final double Pos14Ascent2_Lift = 99.0;
+    private final double Pos14Ascent2_Extend = 0.0;
+    private final double Pos14Ascent2_Wrist = 0.46;
     private final double SpecimenLowDropAngle1 = 0.0;
     private final double ManualWristHalfRange = mWristServoMaxPos - Pos1ManualPickup_Wrist;
     // create arrays with the preset values for quick lookup
     private final double[] mLiftPositions = { Pos0Home_Lift, Pos1ManualPickup_Lift, Pos2FloorPickup_Lift, Pos3SpecimenPickup_Lift,
             Pos4SpecimenLowerChamber_Lift, Pos5SpecimenUpperChamber_Lift, Pos6SampleLowerBasket_Lift, Pos7SampleUpperBasket_Lift,
-            Pos8Carry_Lift, Pos9Ascent1_Lift, Pos10AutoSamplePickup_Lift, Pos11Turtle_Lift, Pos12AutoSamplePush_Lift, Pos13AutoSpecSafe_Lift };
+            Pos8Carry_Lift, Pos9Ascent1_Lift, Pos10AutoSamplePickup_Lift, Pos11Turtle_Lift, Pos12AutoSamplePush_Lift, Pos13AutoSpecSafe_Lift,
+            Pos14Ascent2_Lift };
     private final double[] mExtendPositions = { Pos0Home_Extend, Pos1ManualPickup_Extend, Pos2FloorPickup_Extend, Pos3SpecimenPickup_Extend,
             Pos4SpecimenLowerChamber_Extend, Pos5SpecimenUpperChamber_Extend, Pos6SampleLowerBasket_Extend, Pos7SampleUpperBasket_Extend,
-            Pos8Carry_Extend, Pos9Ascent1_Extend, Pos10AutoSamplePickup_Extend, Pos11Turtle_Extend, Pos12AutoSamplePush_Extend, Pos13AutoSpecSafe_Extend };
+            Pos8Carry_Extend, Pos9Ascent1_Extend, Pos10AutoSamplePickup_Extend, Pos11Turtle_Extend, Pos12AutoSamplePush_Extend, Pos13AutoSpecSafe_Extend,
+            Pos14Ascent2_Extend };
     private final double[] mWristPositions = { Pos0Home_Wrist, Pos1ManualPickup_Wrist, Pos2FloorPickup_Wrist, Pos3SpecimenPickup_Wrist,
             Pos4SpecimenLowerChamber_Wrist, Pos5SpecimenUpperChamber_Wrist, Pos6SampleLowerBasket_Wrist, Pos7SampleUpperBasket_Wrist,
-            Pos8Carry_Wrist, Pos9Ascent1_Wrist, Pos10AutoSamplePickup_Wrist, Pos11Turtle_Wrist, Pos12AutoSamplePush_Wrist, Pos13AutoSpecSafe_Wrist };
+            Pos8Carry_Wrist, Pos9Ascent1_Wrist, Pos10AutoSamplePickup_Wrist, Pos11Turtle_Wrist, Pos12AutoSamplePush_Wrist, Pos13AutoSpecSafe_Wrist,
+            Pos14Ascent2_Wrist };
     // index into the position arrays for current movement
     private int mArmPosIdx;
     // current state of an arm movement
@@ -413,7 +419,7 @@ public class Arm {
                 SetArmAction(ArmActions.RunHome);
             } else if (mDpadUp.Out()) {
                 mDpadUp.Used();
-                SetArmAction(ArmActions.RunAscent1);
+                SetArmAction(ArmActions.RunAscent2);
             } else if (mDpadRight.Out()) {
                 mDpadRight.Used();
                 SetArmAction(ArmActions.RunTurtle);
@@ -520,6 +526,12 @@ public class Arm {
                         mMoveState = ArmMoveStates.ExtendHome;
                     }
                     break;
+                case RunAscent2:
+                    mArmPosIdx = ArmPositions.valueOf("Pos14Ascent2").ordinal();
+                    if (mLastActiveAction != mAction) {
+                        mMoveState = ArmMoveStates.ExtendHome;
+                    }
+                    break;
                 case RunManual:
                     mLastActiveAction = ArmActions.RunManual;
                     break;
@@ -572,6 +584,7 @@ public class Arm {
             case RunTurtle:
             case RunAutoSamplePush:
             case RunAutoSpecSafe:
+            case RunAscent2:
                 switch (mMoveState) {
                     case ExtendHome:
                         if (mAction == ArmActions.RunAutoSamplePush) {

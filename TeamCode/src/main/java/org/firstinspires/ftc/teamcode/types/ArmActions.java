@@ -15,5 +15,6 @@ public enum ArmActions {
     RunAutoSamplePickup,
     RunTurtle,
     RunAutoSamplePush,
-    RunAutoSpecSafe
+    RunAutoSpecSafe,
+    RunAscent2
 }
