@@ -58,7 +58,7 @@ public class HyDrive extends LinearOpMode {
     mDrive = new Drive_Manual(mOpMode, mImu);
     // mLens = new Lens(mOpMode);
     // mLights = new Lights(mOpMode);
-    mArm = new Arm(mOpMode, false);
+    mArm = new Arm(mOpMode);
     mIntake = new Intake(mOpMode);
     mClaw = new Claw(mOpMode);
     mSpecArm = new SpecimenArm(mOpMode);
@@ -82,7 +82,7 @@ public class HyDrive extends LinearOpMode {
         module.clearBulkCache();
       }
       mOpMode.mLoopTime = mLoopSleep.milliseconds();
-      if (mArm.Startup(false)) {
+      if (mArm.Startup(OpmodeHeading.handOff)) {
         break;
       }
       mLoopSleep.reset();

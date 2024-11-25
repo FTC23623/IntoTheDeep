@@ -152,17 +152,15 @@ public class Arm {
     Debouncer mCircle;
     Debouncer mTriangle;
     Debouncer mSquareToCancel;
-    // used for auto op modes because we cannot call the process
-    boolean mRunToPositionForAuton;
+    private boolean mTriedFullReset;
 
     /**
      * Initializes the Arm object
      * Lift and extension
      * @param opMode contains various classes needed for subsystems used with an opmode
      */
-    public Arm(HydraOpMode opMode, boolean runToPositionForAuton) {
+    public Arm(HydraOpMode opMode) {
         mOp = opMode;
-        mRunToPositionForAuton = runToPositionForAuton;
         mControl = mOp.mOperatorGamepad;
         mLiftMotor = mOp.mHardwareMap.get(DcMotorEx.class, "liftMotor");
         mSlideMotor = mOp.mHardwareMap.get(DcMotorEx.class, "slideMotor");
@@ -193,6 +191,7 @@ public class Arm {
         mTriangle = new Debouncer(Constants.debounce);
         mCircle = new Debouncer(Constants.debounce);
         mSquareToCancel = new Debouncer(Constants.debounceLong);
+        mTriedFullReset = false;
     }
 
     /**
@@ -536,15 +535,29 @@ public class Arm {
      */
     public boolean Process() {
         boolean requestRunIntake = false;
+        boolean runProcesses = true;
         switch (mAction) {
             case RunHome:
+                // first try to run home quickly by going to position
+                // if that doesn't work, then run the arm startup process
                 SetWristPos(Pos0Home_Wrist);
                 if (!ExtendHome(false)) {
                     SetArmExtension(Pos0Home_Extend);
                 } else if (!LiftHome(false)) {
                     SetLiftArmAngle(Pos0Home_Lift);
+                } else if (!Startup(false)) {
+                    // let the startup process run
+                    runProcesses = false;
+                } else if (!mTriedFullReset && (!ExtendHome(true) || !LiftHome(true))) {
+                    // one of the mechanisms could not reach true home position
+                    // reset arm reset state to 0 and start full reset
+                    mArmResetState = 0;
+                    Startup(false);
+                    runProcesses = false;
+                    mTriedFullReset = true;
                 } else {
                     mMoveState = ArmMoveStates.Done;
+                    mTriedFullReset = false;
                 }
                 break;
             case RunManual:
@@ -632,17 +645,11 @@ public class Arm {
                 }
                 break;
         }
-        // Processes for each system
-        if (mRunToPositionForAuton && mMoveState == ArmMoveStates.Done) {
-            mLiftMotor.setPower(0);
-            mLiftMotor.setTargetPosition(mLiftPositionTicks);
-            mLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            mLiftMotor.setPower(1);
-        } else {
+        if (runProcesses) {
             ProcessArmAngle();
+            ProcessArmExtension();
+            ProcessWristPosition();
         }
-        ProcessArmExtension();
-        ProcessWristPosition();
         mOp.mTelemetry.addData("Lift Home (sw)", LiftHome(true));
         mOp.mTelemetry.addData("Lift Home (pos)", LiftHome(false));
         mOp.mTelemetry.addData("Extend Home (sw)", ExtendHome(true));

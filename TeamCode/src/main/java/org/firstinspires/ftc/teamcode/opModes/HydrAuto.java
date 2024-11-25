@@ -46,7 +46,7 @@ public class HydrAuto extends LinearOpMode {
         mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null,
                 null, null, mElementType);
         mImu = new Imu_navx(mOpMode);
-        mArm = new Arm(mOpMode, false);
+        mArm = new Arm(mOpMode);
         mSpecArm = new SpecimenArm(mOpMode);
         mClaw = new Claw(mOpMode);
         mIntake = new Intake(mOpMode);
