@@ -34,6 +34,10 @@ public class SpecimenArm {
     // REV Core Hex
     // 288 ticks per rotation
     private final double mTicksPerDegree = 288.0 / 360.0;
+    // offset to apply to the motor ticks
+    private int mStartupTicksOffset;
+    // offset of the kickstand position in ticks
+    private final int mKickstandTicksOffset = 24;
     // current arm action
     private ArmActions mAction;
     // angle of the arm when the opmode starts
@@ -64,6 +68,19 @@ public class SpecimenArm {
         mLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mLiftMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         mLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        mStartupTicksOffset = 0;
+    }
+
+    /**
+     * Call after init and before start to set the start position of the arm
+     */
+    public void Startup() {
+        if (AtPickup()) {
+            // arm is at the pickup location, no offset is needed
+            mStartupTicksOffset = 0;
+        } else {
+            mStartupTicksOffset = mKickstandTicksOffset;
+        }
     }
 
     /**
@@ -117,7 +134,7 @@ public class SpecimenArm {
      * @param angle: The target angle in degrees
      */
     public void SetAngle(double angle) {
-        mLiftTargetTicks = (angle - mStartAngle) * mTicksPerDegree;
+        mLiftTargetTicks = (angle - mStartAngle) * mTicksPerDegree - mStartupTicksOffset;
     }
 
     /**
@@ -129,10 +146,11 @@ public class SpecimenArm {
             mAction = ArmActions.Idle;
         }
         double pid = 0;
-        if (AtPickup() && mLiftTargetTicks == 0) {
+        if (AtPickup() && mLiftTargetTicks == -mStartupTicksOffset) {
             mLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             mSpecArmPid.reset();
             mLiftMotor.setPower(0);
+            mStartupTicksOffset = 0;
         } else {
             // get the current position to calculate error
             int currentPos = mLiftMotor.getCurrentPosition();
