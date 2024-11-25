@@ -15,8 +15,7 @@ public class HydrAuto_Specimen extends HydrAuto {
 
     public HydrAuto_Specimen() {
         mElementType = ElementTypes.Specimen;
-        // change to 63.5
-        mBeginPose = new Pose2d(-15.5, 61, HeadingRad(-90));
+        mBeginPose = new Pose2d(-15.5, 63.5, HeadingRad(-90));
         mRunIntakeAtStart = false;
     }
 
@@ -25,14 +24,14 @@ public class HydrAuto_Specimen extends HydrAuto {
         Pose2d chamberPos1 = new Pose2d(-15.5, 32, HeadingRad(-90));
         Pose2d chamberPos2 = new Pose2d(-13.5, 31.5, HeadingRad(-90));
         Pose2d chamberPos3 = new Pose2d(-10, 31.5, HeadingRad(-90));
-        Pose2d chamberPos4 = new Pose2d(-9.5, 31.5, HeadingRad(-90));
+        Pose2d chamberPos4 = new Pose2d(-7, 31.5, HeadingRad(-90));
 
         Pose2d afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
 
         Pose2d specPausePos = new Pose2d(-44, 50, HeadingRad(-90));
         Pose2d specWallPos = new Pose2d(-44, 62, HeadingRad(-90));
 
-        Pose2d parkPos = new Pose2d(-48, 60, HeadingRad(-90));
+        Pose2d parkPos = new Pose2d(-60, 60, HeadingRad(-90));
 
         Action takeS1ToChamber = mDrive.actionBuilder(mBeginPose)
                 .splineToLinearHeading(chamberPos1, HeadingRad(-90))
@@ -59,7 +58,8 @@ public class HydrAuto_Specimen extends HydrAuto {
                 .build();
 
         Action pickupPauseS4 = mDrive.actionBuilder(chamberPos3)
-                .splineToLinearHeading(specPausePos, HeadingRad(0))
+                .setTangent(HeadingRad(90))
+                .splineToLinearHeading(specPausePos, HeadingRad(180))
                 .build();
 
         Action takeS4ToChamber = mDrive.actionBuilder(specWallPos)
@@ -89,9 +89,9 @@ public class HydrAuto_Specimen extends HydrAuto {
                 PickupActions(PickupS2(specPausePos), DriveToWall(specPausePos, specWallPos)),
                 ScoreActions(takeS2ToChamber),
                 PickupActions(pickupPauseS3, DriveToWall(specPausePos, specWallPos)),
-                ScoreActions(takeS3ToChamber),/*,
+                ScoreActions(takeS3ToChamber),
                 PickupActions(pickupPauseS4, DriveToWall(specPausePos, specWallPos)),
-                ScoreActions(takeS4ToChamber),*/
+                ScoreActions(takeS4ToChamber),
                 park,
                 mArm.GetAction(ArmActions.RunHome)
         );
