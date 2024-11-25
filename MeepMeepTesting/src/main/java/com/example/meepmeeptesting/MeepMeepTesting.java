@@ -16,21 +16,22 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), HeadingRad(180), 15)
                 .build();
 
-        if (false) {
-            Pose2d basket = new Pose2d(56, 50, HeadingRad(-135));
-            Pose2d s2 = new Pose2d(52, 47, HeadingRad(-105));
-            Pose2d s3 = new Pose2d(52, 47, HeadingRad(-85));
-            Pose2d s4 = new Pose2d(52, 26, HeadingRad(0));
+        if (true) {
+            Pose2d basket = new Pose2d(53, 52, HeadingRad(-135));
+            Pose2d s2 = new Pose2d(59, 51, HeadingRad(-90));
+            Pose2d s3 = new Pose2d(49, 51.5, HeadingRad(-87));
+            Pose2d s4 = new Pose2d(52, 45, HeadingRad(-45));
+            Pose2d park = new Pose2d(25, 10, HeadingRad(180));
             myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(39.5, 63.5, HeadingRad(-90)))
                     .splineToLinearHeading(basket, HeadingRad(0))
                     .splineToLinearHeading(s2,HeadingRad(-90))
-                    /*.splineToLinearHeading(basket,HeadingRad(0))
+                    .splineToLinearHeading(basket,HeadingRad(0))
                     .splineToLinearHeading(s3,HeadingRad(-90))
-                    .splineToLinearHeading(basket,HeadingRad(0))/*
-                    /*.splineToLinearHeading(s4,HeadingRad(90))
-                    .splineToLinearHeading(basket,HeadingRad(0))*/
-                    /*.splineToLinearHeading(new Pose2d(48, 38, HeadingRad(180)), HeadingRad(-90))
-                    .splineToLinearHeading(new Pose2d(25,10,HeadingRad(180)),HeadingRad(180))*/
+                    .splineToLinearHeading(basket,HeadingRad(0))
+                    .splineToLinearHeading(s4,HeadingRad(90))
+                    .splineToLinearHeading(basket,HeadingRad(0))
+                    .setTangent(HeadingRad(270))
+                    .splineToLinearHeading(park,HeadingRad(180))
                     .build());
         } else if (false) {
             Pose2d chamberPos1 = new Pose2d(-15.5, 32, HeadingRad(-90));

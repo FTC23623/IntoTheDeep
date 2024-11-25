@@ -6,6 +6,8 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
+import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 import org.firstinspires.ftc.teamcode.types.IntakeActions;
@@ -25,6 +27,7 @@ public class HydrAuto_Sample extends HydrAuto {
         Pose2d s2 = new Pose2d(59, 51, HeadingRad(-90));
         Pose2d s3 = new Pose2d(49, 51.5, HeadingRad(-87));
         Pose2d s4 = new Pose2d(52, 45, HeadingRad(-45));
+        Pose2d park = new Pose2d(25, 10, HeadingRad(180));
 
         Action takeS1ToBasket = mDrive.actionBuilder(mBeginPose)
                 .splineToLinearHeading(basket, HeadingRad(0))
@@ -54,9 +57,9 @@ public class HydrAuto_Sample extends HydrAuto {
                 .splineToLinearHeading(basket, HeadingRad(0))
                 .build();
 
-        Action park = mDrive.actionBuilder(basket)
-                .splineToLinearHeading(new Pose2d(58, 56, HeadingRad(-90)), HeadingRad(0))
-                .splineToLinearHeading(new Pose2d(25, 10, HeadingRad(180)), HeadingRad(180))
+        Action goPark = mDrive.actionBuilder(basket)
+                .setTangent(HeadingRad(270))
+                .splineToLinearHeading(park, HeadingRad(180))
                 .build();
 
         return new SequentialAction(
@@ -68,7 +71,10 @@ public class HydrAuto_Sample extends HydrAuto {
                 ScoreActions(takeS3ToBasket),
                 PickupActions(driveToS4),
                 ScoreActions(takeS4ToBasket),
-                mArm.GetAction(ArmActions.RunHome)
+                new ParallelAction(
+                        goPark,
+                        mArm.GetAction(ArmActions.RunAscent1)
+                )
         );
     }
 
