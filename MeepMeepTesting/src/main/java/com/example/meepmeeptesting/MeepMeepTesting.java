@@ -87,11 +87,11 @@ public class MeepMeepTesting {
 
             Pose2d afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
 
-            Pose2d startPushS2 = new Pose2d(-46, 12, HeadingRad(-90));
-            Pose2d finishPushS2 = new Pose2d(-46, 60, HeadingRad(-90));
+            Pose2d startPushS2 = new Pose2d(-48, 12, HeadingRad(-90));
+            Pose2d finishPushS2 = new Pose2d(-48, 44, HeadingRad(-90));
 
-            Pose2d startPushS3 = new Pose2d(-56, 12, HeadingRad(-90));
-            Pose2d finishPushS3 = new Pose2d(-56, 60, HeadingRad(-90));
+            Pose2d startPushS3 = new Pose2d(-52, 12, HeadingRad(-90));
+            Pose2d finishPushS3 = new Pose2d(-52, 44, HeadingRad(-90));
 
             Pose2d startPushS4 = new Pose2d(-66, 12, HeadingRad(-90));
             Pose2d finishPushS4 = new Pose2d(-66, 60, HeadingRad(-90));
@@ -107,14 +107,15 @@ public class MeepMeepTesting {
                     .setTangent(HeadingRad(180))
                     .splineToLinearHeading(startPushS2, HeadingRad(180))
                     .setTangent(HeadingRad(90))
-                    .splineToLinearHeading(finishPushS2, HeadingRad(-90))
-                    .setTangent(HeadingRad(-90))
+                    .splineToLinearHeading(finishPushS2, HeadingRad(90))
+                    .setTangent(HeadingRad(0))
                     .splineToLinearHeading(startPushS3, HeadingRad(180))
                     .setTangent(HeadingRad(90))
-                    .splineToLinearHeading(finishPushS3, HeadingRad(-90))
+                    .splineToLinearHeading(finishPushS3, HeadingRad(90))
                     //.splineToLinearHeading(startSlideS4, HeadingRad(180))
-                    //.splineToLinearHeading(finishSlideS4, HeadingRad(-90))
-                    .splineToLinearHeading(specPausePos, HeadingRad(0))
+                    //.splineToLinearHeading(finishSlideS4, HeadingRad(90))
+                    .setTangent(HeadingRad(45))
+                    .splineToLinearHeading(specPausePos, HeadingRad(45))
                     .setTangent(HeadingRad(90))
                     .splineToLinearHeading(specWallPos,HeadingRad(-90))
                     .setTangent(HeadingRad(-45))

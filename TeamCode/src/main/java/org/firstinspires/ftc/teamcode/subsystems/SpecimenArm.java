@@ -26,9 +26,9 @@ public class SpecimenArm {
     private final PIDController mSpecArmPid;
     private final RevTouchSensor mLiftPickupPosition;
     // PID coefficients
-    public final double mSpecArmP = 0.022;
-    public final double mSpecArmI = 0.0;
-    public final double mSpecArmD = 0.0018;
+    private final double mSpecArmP = 0.015;
+    private final double mSpecArmI = 0.0;
+    private final double mSpecArmD = 0.001;
     // Target in degrees
     private double mLiftTargetTicks;
     // REV Core Hex
@@ -37,7 +37,7 @@ public class SpecimenArm {
     // offset to apply to the motor ticks
     private int mStartupTicksOffset;
     // offset of the kickstand position in ticks
-    private final int mKickstandTicksOffset = 24;
+    private final int mKickstandTicksOffset = 15;
     // current arm action
     private ArmActions mAction;
     // angle of the arm when the opmode starts
@@ -50,6 +50,9 @@ public class SpecimenArm {
     private final Debouncer mSquare;
     private final Debouncer mTriangle;
     private final Debouncer mDpadDown;
+    private ElapsedTime mClawOpenTimer;
+    private boolean mClawOpen;
+    private boolean mStartup;
 
     /**
      * Construct and initialize a new SpecimenArm
@@ -69,18 +72,25 @@ public class SpecimenArm {
         mLiftMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         mLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         mStartupTicksOffset = 0;
+        mClawOpenTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        mClawOpen = false;
+        mStartup = false;
     }
 
     /**
      * Call after init and before start to set the start position of the arm
      */
-    public void Startup() {
-        if (AtPickup()) {
-            // arm is at the pickup location, no offset is needed
-            mStartupTicksOffset = 0;
-        } else {
-            mStartupTicksOffset = mKickstandTicksOffset;
+    public boolean Startup() {
+        if (!mStartup) {
+            if (AtPickup()) {
+                // arm is at the pickup location, no offset is needed
+                mStartupTicksOffset = 0;
+            } else {
+                mStartupTicksOffset = mKickstandTicksOffset;
+            }
+            mStartup = true;
         }
+        return mStartup;
     }
 
     /**
@@ -122,6 +132,8 @@ public class SpecimenArm {
                 SetAngle(mHighScorePosition);
                 break;
             case RunScoreHighScore:
+                mClawOpenTimer.reset();
+                mClawOpen = true;
                 SetAngle(mScorePosition);
                 break;
             default:
@@ -140,7 +152,7 @@ public class SpecimenArm {
     /**
      * Manage the PID loop for the arm
      */
-    public void Process() {
+    public boolean Process() {
         // set to idle when we're near position in case something is waiting
         if (!LiftBusy()) {
             mAction = ArmActions.Idle;
@@ -165,6 +177,12 @@ public class SpecimenArm {
         mOp.mTelemetry.addData("Spec Pwr", pid);
         mOp.mTelemetry.addData("Spec Curr", mLiftMotor.getCurrent(CurrentUnit.MILLIAMPS));
         mOp.mTelemetry.addData("Spec Pickup", AtPickup());
+        if (mClawOpen && mClawOpenTimer.milliseconds() >= 250) {
+            mClawOpen = false;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

@@ -82,7 +82,7 @@ public class HyDrive extends LinearOpMode {
         module.clearBulkCache();
       }
       mOpMode.mLoopTime = mLoopSleep.milliseconds();
-      if (mArm.Startup(OpmodeHeading.handOff)) {
+      if (mArm.Startup(OpmodeHeading.handOff) && mSpecArm.Startup()) {
         break;
       }
       mLoopSleep.reset();
@@ -107,7 +107,9 @@ public class HyDrive extends LinearOpMode {
         mIntake.RunIn();
       }
       mIntake.Process();
-      mSpecArm.Process();
+      if (mSpecArm.Process()) {
+        mClaw.ForceOpen();
+      }
       // Update telemetry once for all processes
       telemetry.update();
       mLoopSleep.reset();

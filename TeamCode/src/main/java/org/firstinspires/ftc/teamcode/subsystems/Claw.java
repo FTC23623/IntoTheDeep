@@ -46,6 +46,12 @@ public class Claw {
         mServo.setPosition(mOpen);
     }
 
+    public void ForceOpen() {
+        mRightBumperPress.Force();
+        mRightBumperRelease.In(false);
+        HandleUserInput();
+    }
+
     /**
      * Handle user input for the claw
      */

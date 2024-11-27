@@ -121,7 +121,7 @@ public class Arm {
     private final double Pos13AutoSpecSafe_Extend = 0.0;
     private final double Pos13AutoSpecSafe_Wrist = 0.45;
     private final double Pos14Ascent2_Lift = 99.0;
-    private final double Pos14Ascent2_Extend = 0.0;
+    private final double Pos14Ascent2_Extend = 3.0;
     private final double Pos14Ascent2_Wrist = 0.46;
     private final double SpecimenLowDropAngle1 = 0.0;
     private final double ManualWristHalfRange = mWristServoMaxPos - Pos1ManualPickup_Wrist;
@@ -220,7 +220,7 @@ public class Arm {
                     mSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                     mSlideMotor.setDirection(DcMotorSimple.Direction.FORWARD);
                     // start by lifting the arm so we can get the intake out of the way
-                    mLiftMotor.setTargetPosition((int)(mLiftMotor.getCurrentPosition() + 20 * mLiftTicksPerDegree));
+                    mLiftMotor.setTargetPosition((int)(20 * mLiftTicksPerDegree));
                     mLiftMotor.setPower(0.8);
                     mLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     mArmResetState = 1;
@@ -248,7 +248,7 @@ public class Arm {
                     // fall through
                 } else {
                     // go by 1/2 in at a time until we get there
-                    mSlideMotor.setTargetPosition((int)(mSlideMotor.getCurrentPosition() - 0.5 * mArmExtendTicksPerInch));
+                    mSlideMotor.setTargetPosition((int)(mSlideMotor.getCurrentPosition() - 2 * mArmExtendTicksPerInch));
                     mSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     mSlideMotor.setPower(0.8);
                     break;
@@ -266,7 +266,7 @@ public class Arm {
                     mArmResetState = 6;
                     // fall through
                 } else {
-                    mLiftMotor.setTargetPosition((int)(mLiftMotor.getCurrentPosition() - 5 * mLiftTicksPerDegree));
+                    mLiftMotor.setTargetPosition((int)(mLiftMotor.getCurrentPosition() - 10 * mLiftTicksPerDegree));
                     mLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     mLiftMotor.setPower(0.8);
                     break;
@@ -587,9 +587,10 @@ public class Arm {
             case RunAscent2:
                 switch (mMoveState) {
                     case ExtendHome:
-                        if (mAction == ArmActions.RunAutoSamplePush) {
+                        if (mAction == ArmActions.RunAutoSamplePush || mAction == ArmActions.RunAscent2) {
                             SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
                             mMoveState = ArmMoveStates.LiftAngle;
+                            // fall through
                         } else {
                             if (ExtendHome(false)) {
                                 SetWristPos(Pos0Home_Wrist);
@@ -599,17 +600,20 @@ public class Arm {
                                 } else {
                                     SetLiftArmAngle(mLiftPositions[mArmPosIdx]);
                                 }
+                                // fall through
                             } else {
                                 SetArmExtension(Pos0Home_Extend);
+                                break;
                             }
                         }
-                        break;
                     case LiftAngle:
                         if (!LiftBusy()) {
                             mMoveState = ArmMoveStates.ExtendToPos;
                             SetArmExtension(mExtendPositions[mArmPosIdx]);
+                            // fall through
+                        } else {
+                            break;
                         }
-                        break;
                     case ExtendToPos:
                         if (!ExtendBusy()) {
                             if (mOp.mTargetElement == ElementTypes.Specimen && (mAction == ArmActions.RunScoreHigh || mAction == ArmActions.RunScoreLow)) {
@@ -619,8 +623,10 @@ public class Arm {
                                 SetWristPos(mWristPositions[mArmPosIdx]);
                                 mMoveState = ArmMoveStates.Done;
                             }
+                            // fall through
+                        } else {
+                            break;
                         }
-                        break;
                     case SpecimenWait1:
                         if (mDpadDown.Out()) {
                             mDpadDown.Used();
@@ -632,26 +638,34 @@ public class Arm {
                                 SetLiftArmAngle(SpecimenLowDropAngle1);
                                 mMoveState = ArmMoveStates.SpecimenDropLow;
                             }
+                            // fall through
+                        } else {
+                            break;
                         }
-                        break;
                     case SpecimenWait2:
                         if (mDpadDown.Out()) {
                             mDpadDown.Used();
                             SetArmExtension(0.0);
                             requestRunIntake = true;
                             mMoveState = ArmMoveStates.SpecimenDropHigh;
+                            // fall through
+                        } else {
+                            break;
                         }
-                        break;
                     case SpecimenDropHigh:
                         if (!ExtendBusy()) {
                             mMoveState = ArmMoveStates.Done;
+                            // fall through
+                        } else {
+                            break;
                         }
-                        break;
                     case SpecimenDropLow:
                         if (!LiftBusy()) {
                             mMoveState = ArmMoveStates.Done;
+                            // fall through
+                        } else {
+                            break;
                         }
-                        break;
                     case Done:
                         mAction = ArmActions.Idle;
                         break;

@@ -72,7 +72,7 @@ public class HydrAuto extends LinearOpMode {
                 mIntake.RunIn();
                 mIntake.Process();
             }
-            if (mArm.Startup(false) && (!mRunIntakeAtStart || (mTimeSinceStart.milliseconds() > 250))) {
+            if (mArm.Startup(false) && mSpecArm.Startup() && (!mRunIntakeAtStart || (mTimeSinceStart.milliseconds() > 250))) {
                 break;
             }
             idle();
