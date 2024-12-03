@@ -20,11 +20,11 @@ public class HydrAuto_Specimen_Push extends HydrAuto_Specimen {
 
     @Override
     protected SequentialAction SamplesToObsZone(Pose2d startPos) {
-        Pose2d startPushS2 = new Pose2d(-48, 12, HeadingRad(-90));
-        Pose2d finishPushS2 = new Pose2d(-48, 44, HeadingRad(-90));
+        Pose2d startPushS2 = new Pose2d(-50, 12, HeadingRad(-90));
+        Pose2d finishPushS2 = new Pose2d(-50, 50, HeadingRad(-90));
 
-        Pose2d startPushS3 = new Pose2d(-52, 12, HeadingRad(-90));
-        Pose2d finishPushS3 = new Pose2d(-52, 44, HeadingRad(-90));
+        Pose2d startPushS3 = new Pose2d(-57, 12, HeadingRad(-90));
+        Pose2d finishPushS3 = new Pose2d(-57, 50, HeadingRad(-90));
 
         mLastPosition = finishPushS3;
 
@@ -54,8 +54,8 @@ public class HydrAuto_Specimen_Push extends HydrAuto_Specimen {
     @Override
     protected Action PickupS2(Pose2d endPos) {
         return mDrive.actionBuilder(mLastPosition)
-                .setTangent(HeadingRad(45))
-                .splineToLinearHeading(endPos, HeadingRad(45))
+                .setTangent(HeadingRad(0))
+                .splineToLinearHeading(endPos, HeadingRad(0))
                 .build();
     }
 }

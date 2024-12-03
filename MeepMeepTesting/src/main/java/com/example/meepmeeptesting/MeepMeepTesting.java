@@ -81,17 +81,17 @@ public class MeepMeepTesting {
                     .build());
         } else if (true) {
             Pose2d chamberPos1 = new Pose2d(-15.5, 32, HeadingRad(-90));
-            Pose2d chamberPos2 = new Pose2d(-13.5, 31.5, HeadingRad(-90));
-            Pose2d chamberPos3 = new Pose2d(-10, 31.5, HeadingRad(-90));
-            Pose2d chamberPos4 = new Pose2d(-7, 31.5, HeadingRad(-90));
+            Pose2d chamberPos2 = new Pose2d(-7.5, 31.5, HeadingRad(-90));
+            Pose2d chamberPos3 = new Pose2d(-4, 31.5, HeadingRad(-90));
+            Pose2d chamberPos4 = new Pose2d(-1, 31.5, HeadingRad(-90));
 
             Pose2d afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
 
-            Pose2d startPushS2 = new Pose2d(-48, 12, HeadingRad(-90));
-            Pose2d finishPushS2 = new Pose2d(-48, 44, HeadingRad(-90));
+            Pose2d startPushS2 = new Pose2d(-50, 12, HeadingRad(-90));
+            Pose2d finishPushS2 = new Pose2d(-50, 50, HeadingRad(-90));
 
-            Pose2d startPushS3 = new Pose2d(-52, 12, HeadingRad(-90));
-            Pose2d finishPushS3 = new Pose2d(-52, 44, HeadingRad(-90));
+            Pose2d startPushS3 = new Pose2d(-57, 12, HeadingRad(-90));
+            Pose2d finishPushS3 = new Pose2d(-57, 50, HeadingRad(-90));
 
             Pose2d startPushS4 = new Pose2d(-66, 12, HeadingRad(-90));
             Pose2d finishPushS4 = new Pose2d(-66, 60, HeadingRad(-90));
@@ -108,14 +108,14 @@ public class MeepMeepTesting {
                     .splineToLinearHeading(startPushS2, HeadingRad(180))
                     .setTangent(HeadingRad(90))
                     .splineToLinearHeading(finishPushS2, HeadingRad(90))
-                    .setTangent(HeadingRad(0))
+                    .setTangent(HeadingRad(-90))
                     .splineToLinearHeading(startPushS3, HeadingRad(180))
                     .setTangent(HeadingRad(90))
                     .splineToLinearHeading(finishPushS3, HeadingRad(90))
                     //.splineToLinearHeading(startSlideS4, HeadingRad(180))
                     //.splineToLinearHeading(finishSlideS4, HeadingRad(90))
-                    .setTangent(HeadingRad(45))
-                    .splineToLinearHeading(specPausePos, HeadingRad(45))
+                    .setTangent(HeadingRad(0))
+                    .splineToLinearHeading(specPausePos, HeadingRad(0))
                     .setTangent(HeadingRad(90))
                     .splineToLinearHeading(specWallPos,HeadingRad(-90))
                     .setTangent(HeadingRad(-45))
@@ -126,12 +126,12 @@ public class MeepMeepTesting {
                     .splineToLinearHeading(specWallPos, HeadingRad(-90))
                     .setTangent(HeadingRad(-45))
                     .splineToLinearHeading(chamberPos3, HeadingRad(-90))
-                    .setTangent(HeadingRad(90))
-                    .splineToLinearHeading(specPausePos, HeadingRad(180))
-                    .setTangent(HeadingRad(90))
-                    .splineToLinearHeading(specWallPos, HeadingRad(-90))
-                    .setTangent(HeadingRad(-45))
-                    .splineToLinearHeading(chamberPos4, HeadingRad(-90))
+                    //.setTangent(HeadingRad(90))
+                    //.splineToLinearHeading(specPausePos, HeadingRad(180))
+                    //.setTangent(HeadingRad(90))
+                    //.splineToLinearHeading(specWallPos, HeadingRad(-90))
+                    //.setTangent(HeadingRad(-45))
+                    //.splineToLinearHeading(chamberPos4, HeadingRad(-90))
                     .setTangent(HeadingRad(90))
                     .splineToLinearHeading(parkPos, HeadingRad(180))
                     .build());

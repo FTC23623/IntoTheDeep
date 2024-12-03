@@ -22,9 +22,9 @@ public class HydrAuto_Specimen extends HydrAuto {
     @Override
     protected SequentialAction CreateAuto() {
         Pose2d chamberPos1 = new Pose2d(-15.5, 32, HeadingRad(-90));
-        Pose2d chamberPos2 = new Pose2d(-13.5, 31.5, HeadingRad(-90));
-        Pose2d chamberPos3 = new Pose2d(-10, 31.5, HeadingRad(-90));
-        Pose2d chamberPos4 = new Pose2d(-7, 31.5, HeadingRad(-90));
+        Pose2d chamberPos2 = new Pose2d(-7.5, 31.5, HeadingRad(-90));
+        Pose2d chamberPos3 = new Pose2d(-4, 31.5, HeadingRad(-90));
+        Pose2d chamberPos4 = new Pose2d(-1, 31.5, HeadingRad(-90));
 
         Pose2d afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
 
@@ -67,7 +67,7 @@ public class HydrAuto_Specimen extends HydrAuto {
                 .splineToLinearHeading(chamberPos4, HeadingRad(-90))
                 .build();
 
-        Action park = mDrive.actionBuilder(chamberPos4)
+        Action park = mDrive.actionBuilder(chamberPos3)
                 .setTangent(HeadingRad(90))
                 .splineToLinearHeading(parkPos, HeadingRad(180))
                 .build();
@@ -90,8 +90,8 @@ public class HydrAuto_Specimen extends HydrAuto {
                 ScoreActions(takeS2ToChamber),
                 PickupActions(pickupPauseS3, DriveToWall(specPausePos, specWallPos)),
                 ScoreActions(takeS3ToChamber),
-                PickupActions(pickupPauseS4, DriveToWall(specPausePos, specWallPos)),
-                ScoreActions(takeS4ToChamber),
+                //PickupActions(pickupPauseS4, DriveToWall(specPausePos, specWallPos)),
+                //ScoreActions(takeS4ToChamber),
                 park,
                 mArm.GetAction(ArmActions.RunHome)
         );
@@ -125,15 +125,14 @@ public class HydrAuto_Specimen extends HydrAuto {
         return new SequentialAction(
                 // get specimen arm back to pickup position
                 // drive to the observation zone
-                new ParallelAction(
-                        mSpecArm.GetAction(ArmActions.RunPickup),
-                        driveToObsZone
-                ),
+                driveToObsZone,
+                mClaw.GetAction(ClawActions.Close),
+                mSpecArm.GetAction(ArmActions.RunPickup),
                 // open the claw
                 // wait for the human player to align the specimen
                 new ParallelAction(
                         mClaw.GetAction(ClawActions.Open),
-                        new SleepAction(0.5)
+                        new SleepAction(0.4)
                 ),
                 // drive back to the wall
                 driveToWall,
