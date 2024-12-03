@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.objects.Debouncer;
 import org.firstinspires.ftc.teamcode.objects.HydraOpMode;
@@ -20,6 +21,9 @@ public class Claw {
     // button debouncers
     private final Debouncer mRightBumperPress;
     private final Debouncer mRightBumperRelease;
+    // variables for forcing the claw to open for a time
+    private boolean mForcedOpen;
+    private final ElapsedTime mForceOpenTimer;
 
     /**
      * Construct and intialize a new Claw
@@ -30,6 +34,8 @@ public class Claw {
         mServo = mOp.mHardwareMap.get(Servo.class, "clawServo");
         mRightBumperPress = new Debouncer(Constants.debounce);
         mRightBumperRelease = new Debouncer(Constants.debounce);
+        mForcedOpen = false;
+        mForceOpenTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     }
 
     /**
@@ -47,9 +53,9 @@ public class Claw {
     }
 
     public void ForceOpen() {
-        mRightBumperPress.Force();
-        mRightBumperRelease.In(false);
-        HandleUserInput();
+        Open();
+        mForcedOpen = true;
+        mForceOpenTimer.reset();
     }
 
     /**
@@ -60,7 +66,12 @@ public class Claw {
         mRightBumperPress.In(mOp.mOperatorGamepad.right_bumper);
         mRightBumperRelease.In(!mOp.mOperatorGamepad.right_bumper);
         // open or close the claw based on input
-        if (mRightBumperPress.Out()) {
+        if (mForcedOpen) {
+            Open();
+            if (mForceOpenTimer.milliseconds() >= 500) {
+                mForcedOpen = false;
+            }
+        } else if (mRightBumperPress.Out()) {
             Open();
         } else if (mRightBumperRelease.Out()) {
             Close();
