@@ -38,7 +38,7 @@ public class HydrAuto_Specimen extends HydrAuto {
                 .build();
 
         Action backup = mDrive.actionBuilder(chamberPos1)
-                .setTangent(HeadingRad(-90))
+                .setTangent(HeadingRad(90))
                 .splineToLinearHeading(afterS1Score, HeadingRad(90))
                 .build();
 

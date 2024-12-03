@@ -25,7 +25,7 @@ public class HydrAuto_Sample extends HydrAuto {
     protected SequentialAction CreateAuto() {
         Pose2d basket = new Pose2d(53, 52, HeadingRad(-135));
         Pose2d s2 = new Pose2d(59, 51, HeadingRad(-90));
-        Pose2d s3 = new Pose2d(49, 51.5, HeadingRad(-87));
+        Pose2d s3 = new Pose2d(49, 51.5, HeadingRad(-90));
         Pose2d s4 = new Pose2d(52, 45, HeadingRad(-45));
         Pose2d park = new Pose2d(25, 10, HeadingRad(180));
 
@@ -34,7 +34,7 @@ public class HydrAuto_Sample extends HydrAuto {
                 .build();
 
         Action driveToS2 = mDrive.actionBuilder(basket)
-                .splineToLinearHeading(s2, HeadingRad(-90))
+                .splineToLinearHeading(s2, HeadingRad(0))
                 .build();
 
         Action takeS2ToBasket = mDrive.actionBuilder(s2)
@@ -42,7 +42,7 @@ public class HydrAuto_Sample extends HydrAuto {
                 .build();
 
         Action driveToS3 = mDrive.actionBuilder(basket)
-                .splineToLinearHeading(s3, HeadingRad(-90))
+                .splineToLinearHeading(s3, HeadingRad(180))
                 .build();
 
         Action takeS3ToBasket = mDrive.actionBuilder(s3)
@@ -50,11 +50,12 @@ public class HydrAuto_Sample extends HydrAuto {
                 .build();
 
         Action driveToS4 = mDrive.actionBuilder(basket)
-                .splineToLinearHeading(s4, HeadingRad(90))
+                .setTangent(HeadingRad(-90))
+                .splineToLinearHeading(s4, HeadingRad(-90))
                 .build();
 
         Action takeS4ToBasket = mDrive.actionBuilder(s4)
-                .splineToLinearHeading(basket, HeadingRad(0))
+                .splineToLinearHeading(basket, HeadingRad(-90))
                 .build();
 
         Action goPark = mDrive.actionBuilder(basket)
