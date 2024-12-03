@@ -221,6 +221,7 @@ public class Arm {
                     mSlideMotor.setDirection(DcMotorSimple.Direction.FORWARD);
                     // start by lifting the arm so we can get the intake out of the way
                     mLiftMotor.setTargetPosition((int)(20 * mLiftTicksPerDegree));
+                    mLiftPositionTicks = (int)(20 * mLiftTicksPerDegree);
                     mLiftMotor.setPower(0.8);
                     mLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     mArmResetState = 1;
