@@ -169,10 +169,13 @@ public class Intake {
         private boolean started = false;
         // run has been called once
         private final IntakeActions mAction;
+        // timeout for getting an element
+        private final ElapsedTime mPickupTimeout;
 
         // construct on the supplied action
         public RunAction(IntakeActions action) {
             mAction = action;
+            mPickupTimeout = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         }
 
         /**
@@ -187,9 +190,10 @@ public class Intake {
                     if (!started) {
                         RunIn();
                         started = true;
+                        mPickupTimeout.reset();
                     }
                     Process();
-                    return !HaveElement();
+                    return !HaveElement() && mPickupTimeout.milliseconds() < 2500;
                 case InStart:
                     RunIn();
                     Process();

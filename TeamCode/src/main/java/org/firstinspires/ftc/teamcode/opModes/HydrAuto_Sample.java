@@ -24,9 +24,12 @@ public class HydrAuto_Sample extends HydrAuto {
     @Override
     protected SequentialAction CreateAuto() {
         Pose2d basket = new Pose2d(53, 52, HeadingRad(-135));
-        Pose2d s2 = new Pose2d(59, 51, HeadingRad(-90));
+        Pose2d s2 = new Pose2d(59, 50.75, HeadingRad(-90));
+        Pose2d basketS2 = new Pose2d(54.5, 53.5, HeadingRad(-135));
         Pose2d s3 = new Pose2d(49, 51.5, HeadingRad(-90));
-        Pose2d s4 = new Pose2d(52, 45, HeadingRad(-45));
+        Pose2d basketS3 = new Pose2d(53, 52, HeadingRad(-135));
+        Pose2d s4 = new Pose2d(59, 48.5, HeadingRad(-60));
+        Pose2d basketS4 = new Pose2d(53, 52, HeadingRad(-135));
         Pose2d park = new Pose2d(25, 10, HeadingRad(180));
 
         Action takeS1ToBasket = mDrive.actionBuilder(mBeginPose)
@@ -34,31 +37,32 @@ public class HydrAuto_Sample extends HydrAuto {
                 .build();
 
         Action driveToS2 = mDrive.actionBuilder(basket)
-                .splineToLinearHeading(s2, HeadingRad(0))
+                .setTangent(HeadingRad(135))
+                .splineToLinearHeading(s2, HeadingRad(135))
                 .build();
 
         Action takeS2ToBasket = mDrive.actionBuilder(s2)
-                .splineToLinearHeading(basket, HeadingRad(0))
+                .splineToLinearHeading(basketS2, HeadingRad(0))
                 .build();
 
-        Action driveToS3 = mDrive.actionBuilder(basket)
+        Action driveToS3 = mDrive.actionBuilder(basketS2)
                 .splineToLinearHeading(s3, HeadingRad(180))
                 .build();
 
         Action takeS3ToBasket = mDrive.actionBuilder(s3)
-                .splineToLinearHeading(basket, HeadingRad(0))
+                .splineToLinearHeading(basketS3, HeadingRad(0))
                 .build();
 
-        Action driveToS4 = mDrive.actionBuilder(basket)
+        Action driveToS4 = mDrive.actionBuilder(basketS3)
                 .setTangent(HeadingRad(-90))
                 .splineToLinearHeading(s4, HeadingRad(-90))
                 .build();
 
         Action takeS4ToBasket = mDrive.actionBuilder(s4)
-                .splineToLinearHeading(basket, HeadingRad(-90))
+                .splineToLinearHeading(basketS4, HeadingRad(-90))
                 .build();
 
-        Action goPark = mDrive.actionBuilder(basket)
+        Action goPark = mDrive.actionBuilder(basketS4)
                 .setTangent(HeadingRad(270))
                 .splineToLinearHeading(park, HeadingRad(180))
                 .build();
@@ -72,10 +76,11 @@ public class HydrAuto_Sample extends HydrAuto {
                 ScoreActions(takeS3ToBasket),
                 PickupActions(driveToS4),
                 ScoreActions(takeS4ToBasket),
+                mArm.GetAction(ArmActions.RunHome)/*,
                 new ParallelAction(
                         goPark,
                         mArm.GetAction(ArmActions.RunAscent1)
-                )
+                )*/
         );
     }
 
@@ -86,7 +91,7 @@ public class HydrAuto_Sample extends HydrAuto {
                         mArm.GetAction(ArmActions.RunScoreHigh)
                 ),
                 mIntake.GetAction(IntakeActions.OutContinuous),
-                new SleepAction(0.5),
+                new SleepAction(0.4),
                 new ParallelAction(
                         mArm.GetBasketPostScore(-10, 0.05),
                         mIntake.GetAction(IntakeActions.Stop)
@@ -96,11 +101,11 @@ public class HydrAuto_Sample extends HydrAuto {
 
     private SequentialAction PickupActions(Action driveToSample) {
         return new SequentialAction(
-                new ParallelAction(
-                        driveToSample,
-                        mIntake.GetAction(IntakeActions.InStart),
-                        mArm.GetAction(ArmActions.RunAutoSamplePickup)
-                ),
+                //new ParallelAction(
+                mIntake.GetAction(IntakeActions.InStart),
+                driveToSample,
+                mArm.GetAction(ArmActions.RunAutoSamplePickup),
+                //),
                 mIntake.GetAction(IntakeActions.IntakeElement)
         );
     }
