@@ -46,7 +46,7 @@ public class SpecimenArm {
     private final double mHighScorePosition = 117.0;
     private final double mScorePosition = 35.0;
     private final double mPickupPosition = mStartAngle;
-    private final double mOffStandPosition = (mKickstandTicksOffset + 10) / mTicksPerDegree;
+    private final double mOffStandPosition = 90.0;
     public static int mClawReleaseTime = 150;
     // button debouncers
     private final Debouncer mSquare;

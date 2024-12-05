@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
+import org.firstinspires.ftc.teamcode.types.ClawActions;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 import org.firstinspires.ftc.teamcode.types.IntakeActions;
 
@@ -23,13 +24,13 @@ public class HydrAuto_Sample extends HydrAuto {
 
     @Override
     protected SequentialAction CreateAuto() {
-        Pose2d basket = new Pose2d(53, 52, HeadingRad(-135));
+        Pose2d basket = new Pose2d(54.5, 53.5, HeadingRad(-135));
         Pose2d s2 = new Pose2d(59, 50.75, HeadingRad(-90));
         Pose2d basketS2 = new Pose2d(54.5, 53.5, HeadingRad(-135));
         Pose2d s3 = new Pose2d(49, 51.5, HeadingRad(-90));
-        Pose2d basketS3 = new Pose2d(53, 52, HeadingRad(-135));
+        Pose2d basketS3 = new Pose2d(54.5, 53.5, HeadingRad(-135));
         Pose2d s4 = new Pose2d(59, 48.5, HeadingRad(-60));
-        Pose2d basketS4 = new Pose2d(53, 52, HeadingRad(-135));
+        Pose2d basketS4 = new Pose2d(54.5, 53.5, HeadingRad(-135));
         Pose2d park = new Pose2d(25, 10, HeadingRad(180));
 
         Action takeS1ToBasket = mDrive.actionBuilder(mBeginPose)
@@ -70,7 +71,8 @@ public class HydrAuto_Sample extends HydrAuto {
         return new SequentialAction(
                 new ParallelAction(
                     mArm.GetAction(ArmActions.RunPickup),
-                    mSpecArm.GetAction(ArmActions.RunScoreLow)
+                    mSpecArm.GetAction(ArmActions.RunScoreLow),
+                    mClaw.GetAction(ClawActions.Close)
                 ),
                 new ParallelAction(
                     ScoreActions(takeS1ToBasket),
