@@ -68,8 +68,14 @@ public class HydrAuto_Sample extends HydrAuto {
                 .build();
 
         return new SequentialAction(
-                mArm.GetAction(ArmActions.RunPickup),
-                ScoreActions(takeS1ToBasket),
+                new ParallelAction(
+                    mArm.GetAction(ArmActions.RunPickup),
+                    mSpecArm.GetAction(ArmActions.RunScoreLow)
+                ),
+                new ParallelAction(
+                    ScoreActions(takeS1ToBasket),
+                    mSpecArm.GetAction(ArmActions.RunPickup)
+                ),
                 PickupActions(driveToS2),
                 ScoreActions(takeS2ToBasket),
                 PickupActions(driveToS3),

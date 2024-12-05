@@ -30,7 +30,7 @@ public class SpecimenArm {
     private final double mSpecArmI = 0.0;
     private final double mSpecArmD = 0.001;
     // Target in degrees
-    private double mLiftTargetTicks;
+    private int mLiftTargetTicks;
     // REV Core Hex
     // 288 ticks per rotation
     private final double mTicksPerDegree = 288.0 / 360.0;
@@ -46,10 +46,13 @@ public class SpecimenArm {
     private final double mHighScorePosition = 117.0;
     private final double mScorePosition = 35.0;
     private final double mPickupPosition = mStartAngle;
+    private final double mOffStandPosition = (mKickstandTicksOffset + 10) / mTicksPerDegree;
+    public static int mClawReleaseTime = 150;
     // button debouncers
     private final Debouncer mSquare;
     private final Debouncer mTriangle;
     private final Debouncer mDpadDown;
+    private final Debouncer mDpadLeft;
     private ElapsedTime mClawOpenTimer;
     private boolean mClawOpen;
     private boolean mStartup;
@@ -66,6 +69,7 @@ public class SpecimenArm {
         mSquare = new Debouncer(Constants.debounce);
         mTriangle = new Debouncer(Constants.debounce);
         mDpadDown = new Debouncer(Constants.debounce);
+        mDpadLeft = new Debouncer(Constants.debounce);
         mAction = ArmActions.Idle;
         mLiftTargetTicks = 0;
         mLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -101,6 +105,7 @@ public class SpecimenArm {
         mSquare.In(mOp.mOperatorGamepad.square);
         mTriangle.In(mOp.mOperatorGamepad.triangle);
         mDpadDown.In(mOp.mOperatorGamepad.dpad_down);
+        mDpadLeft.In(mOp.mOperatorGamepad.dpad_left);
         // handle buttons that are pressed
         if (mSquare.Out()) {
             mSquare.Used();
@@ -115,6 +120,9 @@ public class SpecimenArm {
             if (mOp.mTargetElement == ElementTypes.Specimen) {
                 SetAction(ArmActions.RunScoreHighScore);
             }
+        } else if (mDpadLeft.Out()) {
+            mDpadLeft.Used();
+            SetAction(ArmActions.RunHome);
         }
     }
 
@@ -136,6 +144,12 @@ public class SpecimenArm {
                 mClawOpen = true;
                 SetAngle(mScorePosition);
                 break;
+            case RunScoreLow:
+                SetAngle(mOffStandPosition);
+                break;
+            case RunHome:
+                SetAngle(mPickupPosition);
+                break;
             default:
                 break;
         }
@@ -146,7 +160,7 @@ public class SpecimenArm {
      * @param angle: The target angle in degrees
      */
     public void SetAngle(double angle) {
-        mLiftTargetTicks = (angle - mStartAngle) * mTicksPerDegree - mStartupTicksOffset;
+        mLiftTargetTicks = (int)((angle - mStartAngle) * mTicksPerDegree - mStartupTicksOffset);
     }
 
     /**
@@ -155,7 +169,12 @@ public class SpecimenArm {
     public boolean Process() {
         // set to idle when we're near position in case something is waiting
         if (!LiftBusy()) {
-            mAction = ArmActions.Idle;
+            if (mAction == ArmActions.RunHome && !AtPickup()) {
+                mLiftTargetTicks -= 6;
+                mStartupTicksOffset = -mLiftTargetTicks;
+            } else {
+                mAction = ArmActions.Idle;
+            }
         }
         double pid = 0;
         if (AtPickup() && mLiftTargetTicks == -mStartupTicksOffset) {
@@ -163,6 +182,7 @@ public class SpecimenArm {
             mSpecArmPid.reset();
             mLiftMotor.setPower(0);
             mStartupTicksOffset = 0;
+            SetAngle(mPickupPosition);
         } else {
             // get the current position to calculate error
             int currentPos = mLiftMotor.getCurrentPosition();
@@ -177,7 +197,9 @@ public class SpecimenArm {
         mOp.mTelemetry.addData("Spec Pwr", pid);
         mOp.mTelemetry.addData("Spec Curr", mLiftMotor.getCurrent(CurrentUnit.MILLIAMPS));
         mOp.mTelemetry.addData("Spec Pickup", AtPickup());
-        if (mClawOpen && mClawOpenTimer.milliseconds() >= 250) {
+        mOp.mTelemetry.addData("Spec Action", mAction);
+        mOp.mTelemetry.addData("Spec Tgt Offset", mStartupTicksOffset);
+        if (mClawOpen && mClawOpenTimer.milliseconds() >= mClawReleaseTime) {
             mClawOpen = false;
             return true;
         } else {
@@ -190,7 +212,7 @@ public class SpecimenArm {
      * @return true when near the target position
      */
     public boolean LiftBusy() {
-        return Math.abs(mLiftMotor.getCurrentPosition() - mLiftTargetTicks) < 3;
+        return Math.abs(mLiftMotor.getCurrentPosition() - mLiftTargetTicks) > 10;
     }
 
     private boolean AtPickup() {
@@ -239,6 +261,7 @@ public class SpecimenArm {
                     case RunPickup:
                     case RunScoreHigh:
                     case RunScoreHighScore:
+                    case RunScoreLow:
                         SetAction(mRRAction);
                         break;
                     default:
@@ -247,9 +270,8 @@ public class SpecimenArm {
                 }
                 started = true;
             }
-            Process();
-            if (mAction == ArmActions.RunScoreHighScore) {
-                return mScoreTimeout.milliseconds() > 250;
+            if (mRRAction == ArmActions.RunScoreHighScore) {
+                return mScoreTimeout.milliseconds() < mClawReleaseTime;
             } else {
                 return mAction != ArmActions.Idle;
             }

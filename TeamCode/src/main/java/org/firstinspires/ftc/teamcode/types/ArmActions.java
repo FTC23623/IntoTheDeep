@@ -16,5 +16,6 @@ public enum ArmActions {
     RunTurtle,
     RunAutoSamplePush,
     RunAutoSpecSafe,
-    RunAscent2
+    RunAscent2,
+    RunAscent2Close
 }

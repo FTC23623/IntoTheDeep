@@ -16,7 +16,7 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), HeadingRad(180), 15)
                 .build();
 
-        if (true) {
+        if (false) {
             Pose2d basket = new Pose2d(53, 52, HeadingRad(-135));
             Pose2d s2 = new Pose2d(59, 50.75, HeadingRad(-90));
             Pose2d basketS2 = new Pose2d(54.5, 53.5, HeadingRad(-135));
@@ -101,8 +101,8 @@ public class MeepMeepTesting {
             Pose2d startPushS4 = new Pose2d(-66, 12, HeadingRad(-90));
             Pose2d finishPushS4 = new Pose2d(-66, 60, HeadingRad(-90));
 
-            Pose2d specPausePos = new Pose2d(-44, 50, HeadingRad(-90));
-            Pose2d specWallPos = new Pose2d(-44, 62, HeadingRad(-90));
+            Pose2d specPausePos = new Pose2d(-48, 50, HeadingRad(-90));
+            Pose2d specWallPos = new Pose2d(-48, 63, HeadingRad(-90));
 
             Pose2d parkPos = new Pose2d(-60, 60, HeadingRad(-90));
             myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-15.5, 63.5, HeadingRad(-90)))
@@ -122,13 +122,13 @@ public class MeepMeepTesting {
                     .setTangent(HeadingRad(0))
                     .splineToLinearHeading(specPausePos, HeadingRad(0))
                     .setTangent(HeadingRad(90))
-                    .splineToLinearHeading(specWallPos,HeadingRad(-90))
+                    .splineToLinearHeading(specWallPos,HeadingRad(90))
                     .setTangent(HeadingRad(-45))
                     .splineToLinearHeading(chamberPos2, HeadingRad(-90))
                     .setTangent(HeadingRad(90))
                     .splineToLinearHeading(specPausePos, HeadingRad(180))
                     .setTangent(HeadingRad(90))
-                    .splineToLinearHeading(specWallPos, HeadingRad(-90))
+                    .splineToLinearHeading(specWallPos, HeadingRad(90))
                     .setTangent(HeadingRad(-45))
                     .splineToLinearHeading(chamberPos3, HeadingRad(-90))
                     //.setTangent(HeadingRad(90))

@@ -28,8 +28,8 @@ public class HydrAuto_Specimen extends HydrAuto {
 
         Pose2d afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
 
-        Pose2d specPausePos = new Pose2d(-44, 50, HeadingRad(-90));
-        Pose2d specWallPos = new Pose2d(-44, 62, HeadingRad(-90));
+        Pose2d specPausePos = new Pose2d(-48, 50, HeadingRad(-90));
+        Pose2d specWallPos = new Pose2d(-48, 63, HeadingRad(-90));
 
         Pose2d parkPos = new Pose2d(-60, 60, HeadingRad(-90));
 
@@ -79,10 +79,10 @@ public class HydrAuto_Specimen extends HydrAuto {
                 ScoreActions(takeS1ToChamber),
                 // back away so we don't hit the submersible
                 // lower the specimen arm
-                new ParallelAction(
-                        backup,
-                        mSpecArm.GetAction(ArmActions.RunPickup)
-                ),
+                //new ParallelAction(
+                backup,
+                        //mSpecArm.GetAction(ArmActions.RunPickup)
+                //),
                 // sweep or push the samples
                 SamplesToObsZone(afterS1Score),
                 // score specimens
@@ -100,7 +100,7 @@ public class HydrAuto_Specimen extends HydrAuto {
     private Action DriveToWall(Pose2d specPausePos, Pose2d specWallPos) {
         return mDrive.actionBuilder(specPausePos)
                 .setTangent(HeadingRad(90))
-                .splineToLinearHeading(specWallPos, HeadingRad(-90))
+                .splineToLinearHeading(specWallPos, HeadingRad(90))
                 .build();
     }
 
