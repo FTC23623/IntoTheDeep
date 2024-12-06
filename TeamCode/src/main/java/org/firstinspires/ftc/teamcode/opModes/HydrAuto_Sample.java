@@ -94,10 +94,10 @@ public class HydrAuto_Sample extends HydrAuto {
 
     private SequentialAction ScoreActions(Action driveToBasket) {
         return new SequentialAction(
-                new ParallelAction(
+                //new ParallelAction(
                         driveToBasket,
-                        mArm.GetAction(ArmActions.RunScoreHigh)
-                ),
+                        mArm.GetAction(ArmActions.RunScoreHigh),
+                //),
                 mIntake.GetAction(IntakeActions.OutContinuous),
                 new SleepAction(0.4),
                 new ParallelAction(
