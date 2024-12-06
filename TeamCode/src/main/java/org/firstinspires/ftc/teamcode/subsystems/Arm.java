@@ -53,7 +53,7 @@ public class Arm {
     // Lift arm motor zero position (home)
     private final double mLiftZeroPosDeg = -20.0;
     // Lift arm motor max lift position
-    private final double mLiftMaxPosDeg = 230.0;
+    private final double mLiftMaxPosDeg = 115.0;
     // Slide motor desired position in ticks
     private int mArmExtendTicks;
     // 384.5 PPR at the motor
@@ -120,7 +120,7 @@ public class Arm {
     private final double Pos13AutoSpecSafe_Lift = 80.0;
     private final double Pos13AutoSpecSafe_Extend = 0.0;
     private final double Pos13AutoSpecSafe_Wrist = 0.45;
-    private final double Pos14Ascent2_Lift = 99.0;
+    private final double Pos14Ascent2_Lift = 115.0;
     private final double Pos14Ascent2_Extend = 3.0;
     private final double Pos14Ascent2_Wrist = 0.46;
     private final double Pos15Ascent2Close_Lift = 0.0;
