@@ -930,7 +930,6 @@ public class Arm {
                 }
                 started = true;
             }
-            Process();
             switch (mRRAction) {
                 case RunScoreHighOverBar:
                     return mMoveState != ArmMoveStates.SpecimenWait1;
@@ -984,9 +983,6 @@ public class Arm {
                 SetArmAngleOffset(mArmOffsetDegrees);
                 SetWristOffset(mWristPosOffset);
             }
-            // calls processes
-            ProcessArmAngle();
-            ProcessWristPosition();
             // check for complete
             return LiftBusy();
         }
