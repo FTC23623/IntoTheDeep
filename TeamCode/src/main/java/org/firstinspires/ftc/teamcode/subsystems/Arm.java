@@ -163,6 +163,7 @@ public class Arm {
     Debouncer mSquareToCancel;
     Debouncer mLeftBumper;
     private boolean mTriedFullReset;
+    private double mAutoWristOverride;
 
     /**
      * Initializes the Arm object
@@ -203,6 +204,7 @@ public class Arm {
         mSquareToCancel = new Debouncer(Constants.debounceLong);
         mLeftBumper = new Debouncer(Constants.debounce);
         mTriedFullReset = false;
+        mAutoWristOverride = -1;
     }
 
     /**
@@ -642,7 +644,12 @@ public class Arm {
                                 SetWristPos(0.71);
                                 mMoveState = ArmMoveStates.SpecimenWait1;
                             } else {
-                                SetWristPos(mWristPositions[mArmPosIdx]);
+                                if (mAutoWristOverride < 0) {
+                                    SetWristPos(mWristPositions[mArmPosIdx]);
+                                } else {
+                                    SetWristPos(mAutoWristOverride);
+                                    mAutoWristOverride = -1;
+                                }
                                 mMoveState = ArmMoveStates.Done;
                             }
                             // fall through
@@ -894,6 +901,10 @@ public class Arm {
         return new RunAction(action);
     }
 
+    public Action GetActionWristOverride(ArmActions action, double wristOverride) {
+        return new RunAction(action, wristOverride);
+    }
+
     /**
      * Runs the supplied action until completion
      */
@@ -902,10 +913,17 @@ public class Arm {
         private final ArmActions mRRAction;
         // run has been called once
         private boolean started = false;
+        private double mWristOverride;
 
         // construct on the supplied action
         public RunAction(ArmActions action) {
             mRRAction = action;
+            mWristOverride = -1;
+        }
+
+        public RunAction(ArmActions action, double wristOverride) {
+            mRRAction = action;
+            mWristOverride = wristOverride;
         }
 
         /**
@@ -928,6 +946,7 @@ public class Arm {
                         SetArmAction(mRRAction);
                         break;
                 }
+                mAutoWristOverride = mWristOverride;
                 started = true;
             }
             switch (mRRAction) {

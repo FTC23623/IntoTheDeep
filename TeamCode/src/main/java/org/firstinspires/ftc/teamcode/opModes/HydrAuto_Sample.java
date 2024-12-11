@@ -38,20 +38,23 @@ public class HydrAuto_Sample extends HydrAuto {
                 .build();
 
         Action driveToS2 = mDrive.actionBuilder(basket)
-                .setTangent(HeadingRad(135))
-                .splineToLinearHeading(s2, HeadingRad(135))
+                .setTangent(HeadingRad(-90))
+                .splineToLinearHeading(s2, HeadingRad(-90))
                 .build();
 
         Action takeS2ToBasket = mDrive.actionBuilder(s2)
-                .splineToLinearHeading(basketS2, HeadingRad(0))
+                .setTangent(HeadingRad(90))
+                .splineToLinearHeading(basketS2, HeadingRad(90))
                 .build();
 
         Action driveToS3 = mDrive.actionBuilder(basketS2)
-                .splineToLinearHeading(s3, HeadingRad(180))
+                .setTangent(HeadingRad(-90))
+                .splineToLinearHeading(s3, HeadingRad(-90))
                 .build();
 
         Action takeS3ToBasket = mDrive.actionBuilder(s3)
-                .splineToLinearHeading(basketS3, HeadingRad(0))
+                .setTangent(HeadingRad(90))
+                .splineToLinearHeading(basketS3, HeadingRad(90))
                 .build();
 
         Action driveToS4 = mDrive.actionBuilder(basketS3)
@@ -60,7 +63,8 @@ public class HydrAuto_Sample extends HydrAuto {
                 .build();
 
         Action takeS4ToBasket = mDrive.actionBuilder(s4)
-                .splineToLinearHeading(basketS4, HeadingRad(-90))
+                .setTangent(HeadingRad(90))
+                .splineToLinearHeading(basketS4, HeadingRad(90))
                 .build();
 
         Action goPark = mDrive.actionBuilder(basketS4)
