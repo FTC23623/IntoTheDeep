@@ -25,9 +25,9 @@ public class HydrAuto_Sample extends HydrAuto {
     @Override
     protected SequentialAction CreateAuto() {
         Pose2d basket = new Pose2d(54.5, 53.5, HeadingRad(-135));
-        Pose2d s2 = new Pose2d(59, 51.25, HeadingRad(-90));
+        Pose2d s2 = new Pose2d(59, 51.25, HeadingRad(-88));
         Pose2d basketS2 = new Pose2d(54.5, 53.5, HeadingRad(-135));
-        Pose2d s3 = new Pose2d(49.5, 51.5, HeadingRad(-88));
+        Pose2d s3 = new Pose2d(49.5, 51.5, HeadingRad(-89));
         Pose2d basketS3 = new Pose2d(54.5, 53.5, HeadingRad(-135));
         Pose2d s4 = new Pose2d(59, 48.5, HeadingRad(-62.5));
         Pose2d basketS4 = new Pose2d(54.5, 53.5, HeadingRad(-135));
@@ -103,7 +103,7 @@ public class HydrAuto_Sample extends HydrAuto {
                         mArm.GetAction(ArmActions.RunScoreHigh)
                 ),
                 mIntake.GetAction(IntakeActions.OutContinuous),
-                new SleepAction(0.4),
+                new SleepAction(0.5),
                 new ParallelAction(
                         mArm.GetBasketPostScore(-10, 0.05),
                         mIntake.GetAction(IntakeActions.Stop)
