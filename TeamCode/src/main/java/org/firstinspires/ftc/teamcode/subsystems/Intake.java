@@ -193,7 +193,7 @@ public class Intake {
                         mPickupTimeout.reset();
                     }
                     Process();
-                    return !HaveElement() && mPickupTimeout.milliseconds() < 2500;
+                    return !HaveElement() && mPickupTimeout.milliseconds() < 1750;
                 case InStart:
                     RunIn();
                     Process();

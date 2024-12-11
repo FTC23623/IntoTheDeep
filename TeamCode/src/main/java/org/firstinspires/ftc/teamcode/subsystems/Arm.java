@@ -108,7 +108,7 @@ public class Arm {
     private final double Pos9Ascent1_Lift = 42.0;
     private final double Pos9Ascent1_Extend = 12.0;
     private final double Pos9Ascent1_Wrist = 0.45;
-    private final double Pos10AutoSamplePickup_Lift = -2;
+    private final double Pos10AutoSamplePickup_Lift = -5;
     private final double Pos10AutoSamplePickup_Extend = 11;
     private final double Pos10AutoSamplePickup_Wrist = 0.70;
     private final double Pos11Turtle_Lift = 230.0;
