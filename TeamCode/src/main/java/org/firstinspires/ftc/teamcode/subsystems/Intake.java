@@ -25,6 +25,7 @@ public class Intake {
     private double mServoPower;
     private boolean mRunIn;
     private boolean mRunOut;
+    private double mRunOutSpeed;
     private final double mElementDetectionDistance = 0.7;
 
     public Intake(HydraOpMode opmode) {
@@ -36,6 +37,7 @@ public class Intake {
         mTimeSinceHaveElement = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         mRunIn = false;
         mRunOut = false;
+        mRunOutSpeed = Constants.contServoBackward;
     }
 
     /**
@@ -44,6 +46,7 @@ public class Intake {
     public void HandleUserInput() {
         mRunIn = mOp.mOperatorGamepad.right_trigger > Constants.trgBtnThresh;
         mRunOut = mOp.mOperatorGamepad.left_trigger > Constants.trgBtnThresh;
+        mRunOutSpeed = 0.5 - mOp.mOperatorGamepad.left_trigger * 0.5;
     }
 
     /**
@@ -123,7 +126,7 @@ public class Intake {
                 }
                 break;
             case Out:
-                mServoPower = Constants.contServoBackward;
+                mServoPower = mRunOutSpeed;
                 if (!mRunOut) {
                     mState = IntakeStates.Idle;
                 }
