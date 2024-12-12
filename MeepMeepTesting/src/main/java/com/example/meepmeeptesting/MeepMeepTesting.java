@@ -94,11 +94,11 @@ public class MeepMeepTesting {
 
             Pose2d afterS1Score = new Pose2d(-15.5, 50, HeadingRad(-135));
 
-            Pose2d startPushS2 = new Pose2d(-50, 12, HeadingRad(-90));
+            Pose2d startPushS2 = new Pose2d(-50, 18, HeadingRad(-90));
             Pose2d finishPushS2 = new Pose2d(-50, 54, HeadingRad(-90));
 
-            Pose2d startPushS3 = new Pose2d(-57, 12, HeadingRad(-90));
-            Pose2d finishPushS3 = new Pose2d(-57, 54, HeadingRad(-90));
+            Pose2d startPushS3 = new Pose2d(-60, 18, HeadingRad(-90));
+            Pose2d finishPushS3 = new Pose2d(-60, 54, HeadingRad(-90));
 
             Pose2d startPushS4 = new Pose2d(-66, 12, HeadingRad(-90));
             Pose2d finishPushS4 = new Pose2d(-66, 60, HeadingRad(-90));

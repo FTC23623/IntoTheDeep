@@ -20,11 +20,11 @@ public class HydrAuto_Specimen_Push extends HydrAuto_Specimen {
 
     @Override
     protected SequentialAction SamplesToObsZone(Pose2d startPos) {
-        Pose2d startPushS2 = new Pose2d(-50, 12, HeadingRad(-90));
+        Pose2d startPushS2 = new Pose2d(-50, 18, HeadingRad(-90));
         Pose2d finishPushS2 = new Pose2d(-50, 54, HeadingRad(-90));
 
-        Pose2d startPushS3 = new Pose2d(-57, 12, HeadingRad(-90));
-        Pose2d finishPushS3 = new Pose2d(-57, 54, HeadingRad(-90));
+        Pose2d startPushS3 = new Pose2d(-60, 18, HeadingRad(-90));
+        Pose2d finishPushS3 = new Pose2d(-60, 54, HeadingRad(-90));
 
         mLastPosition = finishPushS3;
 
