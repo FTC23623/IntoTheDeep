@@ -62,7 +62,7 @@ public class Arm {
     // Max extension of the arm in inches
     // max physically possible 27.95 inches
     private final double mArmExtendMaxInches = 18.5;
-    private final double mExtendForwardMax = 13.5;
+    private final double mExtendForwardMax = 12.5;
     // Whether or not we're currently utilizing manual extension to pick up samples
     private boolean mManualMode;
     // max position value for the wrist servo
