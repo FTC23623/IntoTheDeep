@@ -16,7 +16,7 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), HeadingRad(180), 15)
                 .build();
 
-        if (false) {
+        if (true) {
             Pose2d basket = new Pose2d(54.5, 53.5, HeadingRad(-135));
             Pose2d s2 = new Pose2d(59, 51.25, HeadingRad(-90));
             Pose2d basketS2 = new Pose2d(54.5, 53.5, HeadingRad(-135));
@@ -39,6 +39,8 @@ public class MeepMeepTesting {
                     .splineToLinearHeading(s4,HeadingRad(-90))
                     .setTangent(HeadingRad(90))
                     .splineToLinearHeading(basketS4,HeadingRad(90))
+                            .setTangent(HeadingRad(270))
+                    .splineToLinearHeading(park, HeadingRad(180))
                     .build());
         } else if (false) {
             Pose2d chamberPos1 = new Pose2d(-15.5, 32, HeadingRad(-90));

@@ -16,10 +16,13 @@ import org.firstinspires.ftc.teamcode.types.IntakeActions;
 @Autonomous(name = "HydrAuto_Sample", preselectTeleOp = "HyDrive_Sample")
 public class HydrAuto_Sample extends HydrAuto {
 
+    protected boolean mPark;
+
     public HydrAuto_Sample() {
         mElementType = ElementTypes.Sample;
         mBeginPose = new Pose2d(39.5, 63.5, HeadingRad(-90));
         mRunIntakeAtStart = true;
+        mPark = false;
     }
 
     @Override
@@ -72,7 +75,7 @@ public class HydrAuto_Sample extends HydrAuto {
                 .splineToLinearHeading(park, HeadingRad(180))
                 .build();
 
-        return new SequentialAction(
+        SequentialAction ret = new SequentialAction(
                 new ParallelAction(
                     mArm.GetAction(ArmActions.RunPickup),
                     mSpecArm.GetAction(ArmActions.RunScoreLow),
@@ -88,12 +91,15 @@ public class HydrAuto_Sample extends HydrAuto {
                 ScoreActions(takeS3ToBasket),
                 PickupActions(driveToS4),
                 ScoreActions(takeS4ToBasket),
-                mArm.GetAction(ArmActions.RunHome)/*,
-                new ParallelAction(
-                        goPark,
-                        mArm.GetAction(ArmActions.RunAscent1)
-                )*/
+                mArm.GetAction(ArmActions.RunHome)
         );
+        if (mPark) {
+            ret = new SequentialAction(
+                    ret,
+                    goPark
+            );
+        }
+        return ret;
     }
 
     private SequentialAction ScoreActions(Action driveToBasket) {
