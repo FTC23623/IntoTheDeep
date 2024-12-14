@@ -37,7 +37,7 @@ public class SpecimenArm {
     // offset to apply to the motor ticks
     private int mStartupTicksOffset;
     // offset of the kickstand position in ticks
-    private final int mKickstandTicksOffset = 15;
+    private final int mKickstandTicksOffset = 17;
     // current arm action
     private ArmActions mAction;
     // angle of the arm when the opmode starts
