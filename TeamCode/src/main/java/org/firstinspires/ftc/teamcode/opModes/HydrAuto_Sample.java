@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.types.ClawActions;
 import org.firstinspires.ftc.teamcode.types.ElementTypes;
 import org.firstinspires.ftc.teamcode.types.IntakeActions;
 
+@Disabled
 @Autonomous(name = "HydrAuto_Sample", preselectTeleOp = "HyDrive_Sample")
 public class HydrAuto_Sample extends HydrAuto {
 

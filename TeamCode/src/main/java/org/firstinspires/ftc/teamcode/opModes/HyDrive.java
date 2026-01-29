@@ -36,10 +36,10 @@ public class HyDrive extends LinearOpMode {
   private Drive mDrive;
   // private Lens mLens;
   // private Lights mLights;
-  private Arm mArm;
+  // private Arm mArm;
   private Intake mIntake;
-  private Claw mClaw;
-  private SpecimenArm mSpecArm;
+  // private Claw mClaw;
+  // private SpecimenArm mSpecArm;
   private ElapsedTime mLoopSleep;
   protected ElementTypes mStartElementType = ElementTypes.Sample;
   private Debouncer mDriverTriangle;
@@ -54,14 +54,14 @@ public class HyDrive extends LinearOpMode {
     telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     mOpMode = new HydraOpMode(telemetry, hardwareMap, null, null, gamepad1,
             gamepad2, mStartElementType);
-    mImu = new Imu_navx(mOpMode);
+    mImu = new Imu_Hub(mOpMode);
     mDrive = new Drive_Manual(mOpMode, mImu);
     // mLens = new Lens(mOpMode);
     // mLights = new Lights(mOpMode);
-    mArm = new Arm(mOpMode);
+    // mArm = new Arm(mOpMode);
     mIntake = new Intake(mOpMode);
-    mClaw = new Claw(mOpMode);
-    mSpecArm = new SpecimenArm(mOpMode);
+    // mClaw = new Claw(mOpMode);
+    // mSpecArm = new SpecimenArm(mOpMode);
     mDriverTriangle = new Debouncer(9);
     while (!mImu.Connected() || mImu.Calibrating()) {
       if (isStopRequested() || !opModeIsActive()) {
@@ -77,7 +77,7 @@ public class HyDrive extends LinearOpMode {
     }
     waitForStart();
     mLoopSleep.reset();
-    while (opModeIsActive()) {
+    /*while (opModeIsActive()) {
       for (LynxModule module : allHubs) {
         module.clearBulkCache();
       }
@@ -87,7 +87,7 @@ public class HyDrive extends LinearOpMode {
       }
       mLoopSleep.reset();
       idle();
-    }
+    }*/
     mLoopSleep.reset();
     while (opModeIsActive()) {
       for (LynxModule module : allHubs) {
@@ -95,21 +95,21 @@ public class HyDrive extends LinearOpMode {
       }
       mOpMode.mLoopTime = mLoopSleep.milliseconds();
       // Pass user input to the systems
-      mArm.HandleUserInput();
+      // mArm.HandleUserInput();
       mIntake.HandleUserInput();
-      mClaw.HandleUserInput();
-      mSpecArm.HandleUserInput();
+      // mClaw.HandleUserInput();
+      // mSpecArm.HandleUserInput();
       HandleElementSwitch();
       // System processes
       mDrive.Process();
       // mLights.SetColor(mLens.GetDetectedSample());
-      if (mArm.Process()) {
+      /*if (mArm.Process()) {
         mIntake.RunIn();
-      }
+      }*/
       mIntake.Process();
-      if (mSpecArm.Process()) {
+      /*if (mSpecArm.Process()) {
         mClaw.ForceOpen();
-      }
+      }*/
       // Update telemetry once for all processes
       telemetry.update();
       mLoopSleep.reset();

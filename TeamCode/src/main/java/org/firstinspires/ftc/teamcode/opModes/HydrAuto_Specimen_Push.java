@@ -5,10 +5,12 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.types.ArmActions;
 
+@Disabled
 @Autonomous(name="HydrAuto_Specimen_Push", preselectTeleOp = "HyDrive_Specimen")
 public class HydrAuto_Specimen_Push extends HydrAuto_Specimen {
 
